@@ -1,10 +1,12 @@
 using CommunityToolkit.HighPerformance;
 using SFML.Graphics;
-using Engine.Objects;
 using Engine.Math;
 
 namespace Engine
 {
+	/// <summary>
+	/// A canvas that handles drawing lines and triangles, with a depth buffer
+	/// </summary>
 	class Canvas
 	{
 		public Image screen;
@@ -149,26 +151,6 @@ namespace Engine
 				}
 			}
 		}
-		
-		// static int[] Interpolate(int i0, int d0, int i1, int d1)
-		// {
-		// 	if (i0 == i1)
-		// 	{
-		// 		return new int[]{d0};
-		// 	}
-			
-		// 	List<int> values = new();
-			
-		// 	float a = (d1 - d0) / (i1 - i0);
-		// 	float d = d0;
-			
-		// 	for (int i = i0;  i <= i1; i++)
-		// 	{
-		// 		values.Add(Convert.ToInt32(d));
-		// 		d += a;
-		// 	}
-		// 	return values.ToArray();
-		// }
 		
 		static float[] Interpolate(float i0, float d0, float i1, float d1)
 		{

@@ -26,24 +26,7 @@ namespace Engine
 			
 			
 			public Matrix()
-			{
-				// this.m11 = 0;
-				// this.m12 = 0;
-				// this.m13 = 0;
-				// this.m14 = 0;
-				// this.m21 = 0;
-				// this.m22 = 0;
-				// this.m23 = 0;
-				// this.m24 = 0;
-				// this.m31 = 0;
-				// this.m32 = 0;
-				// this.m33 = 0;
-				// this.m34 = 0;
-				// this.m41 = 0;
-				// this.m42 = 0;
-				// this.m43 = 0;
-				// this.m44 = 0;
-			}
+			{ }
 			
 			public Matrix(float m11, float m12, float m13, float m14,
 						  float m21, float m22, float m23, float m24,
@@ -214,9 +197,8 @@ namespace Engine
 			
 			
 			public Vector()
-			{
-				
-			}
+			{ }
+			
 			public Vector(float x, float y, float z, float w)
 			{
 				this.x = x;

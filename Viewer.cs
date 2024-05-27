@@ -1,6 +1,4 @@
-﻿using SFML;
-using SFML.System;
-using SFML.Window;
+﻿using SFML.Window;
 using SFML.Graphics;
 using Engine.Objects;
 using Engine.Math;

@@ -691,15 +691,6 @@
           }
         }
       },
-      "MathNet.Numerics/5.0.0": {
-        "type": "package",
-        "compile": {
-          "lib/net6.0/MathNet.Numerics.dll": {}
-        },
-        "runtime": {
-          "lib/net6.0/MathNet.Numerics.dll": {}
-        }
-      },
       "SFML.Graphics/2.5.1": {
         "type": "package",
         "dependencies": {
@@ -951,28 +942,6 @@
         "sfml-icon.png"
       ]
     },
-    "MathNet.Numerics/5.0.0": {
-      "sha512": "pg1W2VwaEQMAiTpGK840hZgzavnqjlCMTVSbtVCXVyT+7AX4mc1o89SPv4TBlAjhgCOo9c1Y+jZ5m3ti2YgGgA==",
-      "type": "package",
-      "path": "mathnet.numerics/5.0.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "icon.png",
-        "lib/net461/MathNet.Numerics.dll",
-        "lib/net461/MathNet.Numerics.xml",
-        "lib/net48/MathNet.Numerics.dll",
-        "lib/net48/MathNet.Numerics.xml",
-        "lib/net5.0/MathNet.Numerics.dll",
-        "lib/net5.0/MathNet.Numerics.xml",
-        "lib/net6.0/MathNet.Numerics.dll",
-        "lib/net6.0/MathNet.Numerics.xml",
-        "lib/netstandard2.0/MathNet.Numerics.dll",
-        "lib/netstandard2.0/MathNet.Numerics.xml",
-        "mathnet.numerics.5.0.0.nupkg.sha512",
-        "mathnet.numerics.nuspec"
-      ]
-    },
     "SFML.Graphics/2.5.1": {
       "sha512": "12QtQ7HxOQohpc4P9/O35M5GwjJhuBO8RaaX3MkXSz4QSfY96eskuqcx/OuZ3sJ1bXAWf+93zO+V0zGoy9tvNQ==",
       "type": "package",
@@ -1022,7 +991,6 @@
   "projectFileDependencyGroups": {
     "net6.0": [
       "CommunityToolkit.HighPerformance >= 8.2.2",
-      "MathNet.Numerics >= 5.0.0",
       "SFML.Graphics >= 2.5.1",
       "SFML.System >= 2.5.1",
       "SFML.Window >= 2.5.1"
@@ -1075,10 +1043,6 @@
           "CommunityToolkit.HighPerformance": {
             "target": "Package",
             "version": "[8.2.2, )"
-          },
-          "MathNet.Numerics": {
-            "target": "Package",
-            "version": "[5.0.0, )"
           },
           "SFML.Graphics": {
             "target": "Package",

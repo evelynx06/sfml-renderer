@@ -48,10 +48,6 @@
               "target": "Package",
               "version": "[8.2.2, )"
             },
-            "MathNet.Numerics": {
-              "target": "Package",
-              "version": "[5.0.0, )"
-            },
             "SFML.Graphics": {
               "target": "Package",
               "version": "[2.5.1, )"
