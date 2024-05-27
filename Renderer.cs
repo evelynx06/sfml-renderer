@@ -1,5 +1,6 @@
 using Engine.Math;
 using Engine.Objects;
+using SFML.Graphics;
 
 namespace Engine
 {
@@ -13,6 +14,7 @@ namespace Engine
 		public Plane[] clippingPlanes;
 		
 		public bool fillTriangles = false;
+		public bool useBackfaceCulling = true;
 		
 		public Renderer(int canvasWidth, int canvasHeight, int viewportWidth=1, int viewportHeight=1, float projectionPlaneZ=1)
 		{
@@ -51,17 +53,51 @@ namespace Engine
 			{
 				projected[i] = ProjectVertex(model.vertices[i]);
 			}
-			
-			foreach (Triangle t in model.triangles)
+			if (useBackfaceCulling)
 			{
-				if (fillTriangles)
+				foreach (Triangle t in model.triangles)
 				{
-					canvas.DrawFilledTriangle(projected[t.v0], projected[t.v1], projected[t.v2], t.color);
+					if (!BackfaceCullTriangle(t, model.vertices))
+					{
+						RenderTriangle(t, projected, canvas);
+					}
+					else{
+						Vector triangleNormal = Vector.Cross(model.vertices[t.v1] - model.vertices[t.v0], model.vertices[t.v2] - model.vertices[t.v0]);
+						canvas.DrawWireTriangle(ProjectVertex(triangleNormal + model.vertices[t.v2]), projected[t.v2], projected[t.v1], t.color);
+					 	canvas.DrawWireTriangle(projected[t.v0], projected[t.v1], projected[t.v2], Color.White);
+					}
 				}
-				else
+			}
+			else
+			{
+				foreach (Triangle t in model.triangles)
 				{
-					canvas.DrawWireTriangle(projected[t.v0], projected[t.v1], projected[t.v2], t.color);
+					RenderTriangle(t, projected, canvas);
 				}
+			}
+			
+		}
+		
+		public bool BackfaceCullTriangle(Triangle t, Vector[] vertices)
+		{
+			// N = (B - A) x (C - A)
+			Vector triangleNormal = Vector.Cross(vertices[t.v1] - vertices[t.v0], vertices[t.v2] - vertices[t.v0]);
+			
+			// V = camPos - A	(camPos is [0, 0, 0])
+			Vector triangleToCamera = -1 * vertices[t.v2];
+			
+			return Vector.Dot(triangleToCamera, triangleNormal) <= 0;
+		}
+		
+		public void RenderTriangle(Triangle t, Point[] projected, Canvas canvas)
+		{
+			if (fillTriangles)
+			{
+				canvas.DrawFilledTriangle(projected[t.v0], projected[t.v1], projected[t.v2], t.color);
+			}
+			else
+			{
+				canvas.DrawWireTriangle(projected[t.v0], projected[t.v1], projected[t.v2], t.color);
 			}
 		}
 		
@@ -191,21 +227,21 @@ namespace Engine
 				int a, b, c;
 				if (d0 < 0)
 				{
-					c = triangle.v0;
 					a = triangle.v1;
 					b = triangle.v2;
+					c = triangle.v0;
 				}
 				else if (d1 < 0)
 				{
-					c = triangle.v1;
 					a = triangle.v2;
 					b = triangle.v0;
+					c = triangle.v1;
 				}
 				else
 				{
-					c = triangle.v2;
 					a = triangle.v0;
 					b = triangle.v1;
+					c = triangle.v2;
 				}
 				
 				Vector aPrime = plane.LineIntersect(vertices[a], vertices[c]);

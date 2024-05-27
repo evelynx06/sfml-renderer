@@ -2,13 +2,15 @@
 using SFML.Graphics;
 using Engine.Objects;
 using Engine.Math;
+using SFML.System;
 
 namespace Engine
 {
 	class Viewer
 	{
-		static Renderer renderer;
-		static Scene scene;
+		static Renderer renderer = default!;
+		static Scene scene = default!;
+		static float deltaTime;
 		
 		static void Main()
 		{
@@ -24,8 +26,27 @@ namespace Engine
 			
 			scene = InitializeScene();
 			
+			Clock clock = new();
+			
+			int frames = 0;
+			float dtTotal = 0;
+			
 			while (window.IsOpen)
 			{
+				deltaTime = clock.ElapsedTime.AsSeconds();	// calculate deltaTime
+				clock.Restart();
+				
+				dtTotal += deltaTime;
+				frames++;
+				
+				if (dtTotal > 1)
+				{
+					Console.Write("\rFPS: " + (frames/dtTotal).ToString("0.0") + "   ");
+					dtTotal = 0;
+					frames = 0;
+				}
+				
+				
 				window.DispatchEvents();	// event handling
 				Movements(scene);
 				Canvas canvas = new(width, height);
@@ -41,46 +62,54 @@ namespace Engine
 		{
 			if (Keyboard.IsKeyPressed(Keyboard.Key.Left))
 			{
-				scene.RotateCam('y', -0.5f);
+				scene.RotateCam('y', -45*deltaTime);
 			}
 			if (Keyboard.IsKeyPressed(Keyboard.Key.Right))
 			{
-				scene.RotateCam('y', 0.5f);
+				scene.RotateCam('y', 45*deltaTime);
 			}
 			if (Keyboard.IsKeyPressed(Keyboard.Key.Up))
 			{
-				scene.RotateCam('x', -0.5f);
+				scene.RotateCam('x', -45*deltaTime);
 			}
 			if (Keyboard.IsKeyPressed(Keyboard.Key.Down))
 			{
-				scene.RotateCam('x', 0.5f);
+				scene.RotateCam('x', 45*deltaTime);
 			}
 			
-			if (Keyboard.IsKeyPressed(Keyboard.Key.W))
+			if (Keyboard.IsKeyPressed(Keyboard.Key.W))		// positive z: forward
 			{
-				scene.TranslateCam(new Vector(0, 0, 0.05f, 0));
+				scene.TranslateCam(new Vector(0, 0, 4*deltaTime, 0));
 			}
-			if (Keyboard.IsKeyPressed(Keyboard.Key.S))
+			if (Keyboard.IsKeyPressed(Keyboard.Key.S))		// negative z: backward
 			{
-				scene.TranslateCam(new Vector(0, 0, -0.05f, 0));
+				scene.TranslateCam(new Vector(0, 0, -4*deltaTime, 0));
 			}
-			if (Keyboard.IsKeyPressed(Keyboard.Key.A))
+			if (Keyboard.IsKeyPressed(Keyboard.Key.D))		// positive x: right
 			{
-				scene.TranslateCam(new Vector(-0.05f, 0, 0, 0));
+				scene.TranslateCam(new Vector(4*deltaTime, 0, 0, 0));
 			}
-			if (Keyboard.IsKeyPressed(Keyboard.Key.D))
+			if (Keyboard.IsKeyPressed(Keyboard.Key.A))		// negative x: left
 			{
-				scene.TranslateCam(new Vector(0.05f, 0, 0, 0));
+				scene.TranslateCam(new Vector(-4*deltaTime, 0, 0, 0));
+			}
+			if (Keyboard.IsKeyPressed(Keyboard.Key.Space))	// positive y: up
+			{
+				scene.TranslateCam(new Vector(0, 4*deltaTime, 0, 0));
+			}
+			if (Keyboard.IsKeyPressed(Keyboard.Key.LShift))	// negative y: down
+			{
+				scene.TranslateCam(new Vector(0, -4*deltaTime, 0, 0));
 			}
 		}
 		
 		static Scene InitializeScene()
 		{
-			Vector[] cubeVertices = new Vector[] {new(1, 1, 1, 1), new(-1, 1, 1, 1), new(-1, -1, 1, 1), new(1, -1, 1, 1),
-												  new(1, 1, -1, 1), new(-1, 1, -1, 1), new(-1, -1, -1, 1), new(1, -1, -1, 1)};
-			Triangle[] cubeTriangles = new Triangle[] {new(0, 1, 2, Color.Red), new(0, 2, 3, Color.Red), new(4, 0, 3, Color.Green), new(4, 3, 7, Color.Green),
-													   new(5, 4, 7, Color.Blue), new(5, 7, 6, Color.Blue), new(1, 5, 6, Color.Yellow), new(1, 6, 2, Color.Yellow),
-													   new(4, 5, 1, Color.Magenta), new(4, 1, 0, Color.Magenta), new(2, 6, 7, Color.Cyan), new(2, 7, 3, Color.Cyan)};
+			Vector[] cubeVertices = new Vector[] {new(-1, -1, -1, 1), new(1, -1, -1, 1), new(-1, 1, -1, 1), new(1, 1, -1, 1),
+												  new(-1, -1, 1, 1), new(1, -1, 1, 1), new(-1, 1, 1, 1), new(1, 1, 1, 1)};
+			Triangle[] cubeTriangles = new Triangle[] {new(0, 2, 1, Color.Red), new(2, 3, 1, Color.Red), new(1, 3, 5, Color.Green), new(3, 7, 5, Color.Green),
+													   new(2, 6, 3, Color.Blue), new(3, 6, 7, Color.Blue), new(4, 5, 7, Color.Magenta), new(4, 7, 6, Color.Magenta),
+													   new(0, 4, 2, Color.Yellow), new(2, 4, 6, Color.Yellow), new(0, 1, 4, Color.Cyan), new(1, 5, 4, Color.Cyan)};
 			Model cube = new(cubeVertices, cubeTriangles);
 			
 			
@@ -106,12 +135,11 @@ namespace Engine
 			{
 				case Keyboard.Key.Enter:
 					renderer.fillTriangles = !renderer.fillTriangles;
-					Console.WriteLine(renderer.fillTriangles);
+					Console.WriteLine($"\nfillTriangles: {renderer.fillTriangles}");
 					break;
-				case Keyboard.Key.R:
-					Console.Write("Rotation angle: ");
-					float input = Convert.ToSingle(Console.ReadLine());
-					scene.RotateCam('y', input);
+				case Keyboard.Key.RShift:
+					renderer.useBackfaceCulling = !renderer.useBackfaceCulling;
+					Console.WriteLine($"\nuseBackfaceCulling: {renderer.useBackfaceCulling}");
 					break;
 			}
 		}
