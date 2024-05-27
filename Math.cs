@@ -359,7 +359,7 @@ namespace Engine
 			public float y;
 			public float z;
 			
-			public Point(float x, float y, float depth=0)
+			public Point(float x, float y, float depth)
 			{
 				this.x = x;
 				this.y = y;

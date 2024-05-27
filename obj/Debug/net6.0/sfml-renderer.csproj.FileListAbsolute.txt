@@ -186,4 +186,3 @@ C:\Users\frej.lindelof\Documents\3D Graphics\sfml-renderer\obj\Debug\net6.0\sfml
 C:\Users\frej.lindelof\Documents\3D Graphics\sfml-renderer\obj\Debug\net6.0\sfml-renderer.genruntimeconfig.cache
 C:\Users\frej.lindelof\Documents\3D Graphics\sfml-renderer\obj\Debug\net6.0\ref\sfml-renderer.dll
 C:\Users\frej.lindelof\Documents\3D Graphics\sfml-renderer\bin\Debug\net6.0\CommunityToolkit.HighPerformance.dll
-C:\Users\frej.lindelof\Documents\3D Graphics\sfml-renderer\bin\Debug\net6.0\MathNet.Numerics.dll

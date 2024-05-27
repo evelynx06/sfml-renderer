@@ -18,7 +18,7 @@ namespace Engine
 		{
 			screen = new(width, height);
 			depthBuffer = new float[width, height];
-			depthBuffer.AsSpan2D().Fill(float.PositiveInfinity);
+			depthBuffer.AsSpan2D().Fill(0);
 			screenWidth = (int)width;
 			screenHeight = (int)height;
 		}
@@ -32,11 +32,24 @@ namespace Engine
 			{
 				return;
 			}
-			else if (z < depthBuffer[screen_x, screen_y])
+			else if (z > depthBuffer[screen_x, screen_y])	// the z value passed in is actually 1/z
 			{
 				depthBuffer[screen_x, screen_y] = z;
 				screen.SetPixel((uint)screen_x, (uint)screen_y, color);
 			}
+		}
+		
+		private void PutPixel(float x, float y, Color color)
+		{
+			int screen_x = Convert.ToInt32((screenWidth/2) + x);
+			int screen_y = Convert.ToInt32((screenHeight/2) - y - 1);
+			
+			if (screen_x < 0 || screen_x >= screenWidth || screen_y < 0 || screen_y >= screenHeight)
+			{
+				return;
+			}
+			
+			screen.SetPixel((uint)screen_x, (uint)screen_y, color);
 		}
 		
 		public void DrawWireTriangle(Point p0, Point p1, Point p2, Color color)
@@ -70,13 +83,13 @@ namespace Engine
 			
 			
 			float[] x01 = Interpolate(p0.y, p0.x, p1.y, p1.x);
-			float[] z01 = Interpolate(p0.y, p0.z, p1.y, p1.z);
+			float[] z01 = Interpolate(p0.y, 1/p0.z, p1.y, 1/p1.z);
 			
 			float[] x12 = Interpolate(p1.y, p1.x, p2.y, p2.x);
-			float[] z12 = Interpolate(p1.y, p1.z, p2.y, p2.z);
+			float[] z12 = Interpolate(p1.y, 1/p1.z, p2.y, 1/p2.z);
 			
 			float[] x02 = Interpolate(p0.y, p0.x, p2.y, p2.x);
-			float[] z02 = Interpolate(p0.y, p0.z, p2.y, p2.z);
+			float[] z02 = Interpolate(p0.y, 1/p0.z, p2.y, 1/p2.z);
 			
 			float[] x012 = x01.SkipLast(1).Concat(x12).ToArray();
 			float[] z012 = z01.SkipLast(1).Concat(z12).ToArray();
@@ -134,7 +147,7 @@ namespace Engine
 				float[] ys = Interpolate(p0.x, p0.y, p1.x, p1.y);
 				for (int x = (int)p0.x; x <= (int)p1.x ; x++)
 				{
-					PutPixel(x, ys[x - (int)p0.x], 0, color);
+					PutPixel(x, ys[x - (int)p0.x], color);
 				}
 			}
 			else	// line is vertical-ish
@@ -147,7 +160,7 @@ namespace Engine
 				float[] xs = Interpolate(p0.y, p0.x, p1.y, p1.x);
 				for (int y = (int)p0.y; y <= (int)p1.y ; y++)
 				{
-					PutPixel(xs[y - (int)p0.y], y, 0, color);
+					PutPixel(xs[y - (int)p0.y], y, color);
 				}
 			}
 		}

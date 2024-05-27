@@ -9,7 +9,6 @@
       "sfml-renderer/1.0.0": {
         "dependencies": {
           "CommunityToolkit.HighPerformance": "8.2.2",
-          "MathNet.Numerics": "5.0.0",
           "SFML.Graphics": "2.5.1",
           "SFML.System": "2.5.1",
           "SFML.Window": "2.5.1"
@@ -870,14 +869,6 @@
           }
         }
       },
-      "MathNet.Numerics/5.0.0": {
-        "runtime": {
-          "lib/net6.0/MathNet.Numerics.dll": {
-            "assemblyVersion": "5.0.0.0",
-            "fileVersion": "5.0.0.0"
-          }
-        }
-      },
       "SFML.Graphics/2.5.1": {
         "dependencies": {
           "CSFML": "2.5.2",
@@ -935,13 +926,6 @@
       "sha512": "sha512-cVDRupdYgLdVB8uXpHsLmsyTyJKjGAtyzj5uhQ1LsDbJsCuDcXirwwejEFOpsu7AeF3wyl1jBAAA+grBaWwZLQ==",
       "path": "csfml/2.5.2",
       "hashPath": "csfml.2.5.2.nupkg.sha512"
-    },
-    "MathNet.Numerics/5.0.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-pg1W2VwaEQMAiTpGK840hZgzavnqjlCMTVSbtVCXVyT+7AX4mc1o89SPv4TBlAjhgCOo9c1Y+jZ5m3ti2YgGgA==",
-      "path": "mathnet.numerics/5.0.0",
-      "hashPath": "mathnet.numerics.5.0.0.nupkg.sha512"
     },
     "SFML.Graphics/2.5.1": {
       "type": "package",
