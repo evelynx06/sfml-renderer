@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "NVRcZWldA+BLdTFxe1juSnSLZWlZOypBpi6RjRiZIyVxlRJP2c58ZhqLSOWyw74OFVHLoYbCnMI5Y6USgDB5JQ==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\frej.lindelof\\Documents\\3D Graphics\\sfml-renderer\\sfml-renderer.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\frej.lindelof\\.nuget\\packages\\communitytoolkit.highperformance\\8.2.2\\communitytoolkit.highperformance.8.2.2.nupkg.sha512",
+    "C:\\Users\\frej.lindelof\\.nuget\\packages\\csfml\\2.5.2\\csfml.2.5.2.nupkg.sha512",
+    "C:\\Users\\frej.lindelof\\.nuget\\packages\\mathnet.numerics\\5.0.0\\mathnet.numerics.5.0.0.nupkg.sha512",
+    "C:\\Users\\frej.lindelof\\.nuget\\packages\\sfml.graphics\\2.5.1\\sfml.graphics.2.5.1.nupkg.sha512",
+    "C:\\Users\\frej.lindelof\\.nuget\\packages\\sfml.system\\2.5.1\\sfml.system.2.5.1.nupkg.sha512",
+    "C:\\Users\\frej.lindelof\\.nuget\\packages\\sfml.window\\2.5.1\\sfml.window.2.5.1.nupkg.sha512"
+  ],
+  "logs": []
+}
