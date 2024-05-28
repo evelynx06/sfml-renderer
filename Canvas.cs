@@ -52,6 +52,22 @@ namespace Engine
 			screen.SetPixel((uint)screen_x, (uint)screen_y, color);
 		}
 		
+		private void PutPixelInt(int x, int y, Color color)
+		{
+			int screen_x = (screenWidth/2) + x;
+			int screen_y = (screenHeight/2) - y;
+			
+			if (screen_x < 0 || screen_x >= screenWidth || screen_y < 0 || screen_y >= screenHeight)
+			{
+				return;
+			}
+			// else if (z > depthBuffer[screen_x, screen_y])	// the z value passed in is actually 1/z
+			// {
+				// depthBuffer[screen_x, screen_y] = z;
+				screen.SetPixel((uint)screen_x, (uint)screen_y, color);
+			// }
+		}
+		
 		internal void DrawWireTriangle(Point p0, Point p1, Point p2, Color color)
 		{	
 			DrawLine(p0, p1, color);
@@ -59,26 +75,156 @@ namespace Engine
 			DrawLine(p2, p0, color);
 		}
 		
+		internal void DrawLine(Point p0, Point p1, Color color)
+		{
+			float dx = p1.x - p0.x;
+			float dy = p1.y - p0.y;
+			
+			if (MathF.Abs(dx) > MathF.Abs(dy))	// line is horizontal-ish
+			{
+				if (dx < 0)	// make sure it's left to right
+				{
+					(p1, p0) = (p0, p1);
+				}
+
+				// float[] ys = Interpolate(p0.x, p0.y, p1.x, p1.y);
+				float k = dy/dx;
+				int xStart = (int)MathF.Ceiling(p0.x - 0.5f);
+				int xEnd = (int)MathF.Ceiling(p1.x - 0.5f);
+				for (int x = xStart; x < xEnd; x++)
+				{
+					// PutPixel(x, ys[x - (int)p0.x], color);
+					PutPixelInt(x, (int)(k*(x+0.5f-p0.x)+p0.y), color);
+				}
+			}
+			else	// line is vertical-ish
+			{
+				if (dy < 0)	// make sure it's bottom to top
+				{
+					(p1, p0) = (p0, p1);
+				}
+				
+				// float[] xs = Interpolate(p0.y, p0.x, p1.y, p1.x);
+				float k = dx/dy;
+				int yStart = (int)MathF.Ceiling(p0.y - 0.5f);
+				int yEnd = (int)MathF.Ceiling(p1.y - 0.5f);
+				for (int y = yStart; y < yEnd; y++)
+				{
+					// PutPixel(xs[y - (int)p0.y], y, color);
+					PutPixelInt((int)(k*(y+0.5f-p0.y)+p0.x), y, color);
+				}
+			}
+		}
+		
+		internal void DrawFilledTriangle(Point p0, Point p1, Point p2, Color color)
+		{
+			// sort the points so that y0 <= y1 <= y2
+			if (p1.y < p0.y) { (p0, p1) = (p1, p0); }
+			if (p2.y < p0.y) { (p0, p2) = (p2, p0); }
+			if (p2.y < p1.y) { (p1, p2) = (p2, p1); }
+			
+			if (p0.y == p1.y)	// natural flat top
+			{
+				// sort top points so that x0 <= x1
+				if (p1.x < p0.x) { (p0, p1) = (p1, p0); }
+				DrawFlatTopTriangle(p0, p1, p2, color);
+			}
+			else if (p1.y == p2.y)	// natural flat bottom
+			{
+				// sort bottom points so that x1 <= x2
+				if (p2.x < p1.x) { (p1, p2) = (p2, p1); }
+				DrawFlatBottomTriangle(p0, p1, p2, color);
+			}
+			else	// general triangle
+			{
+				// find splitting vertex
+				float alphaSplit = (p1.y - p0.y) / (p2.y - p0.y);
+				Point pSplit = p0 + (p2 - p0) * alphaSplit;
+				
+				if (p1.x < pSplit.x)	// major right
+				{
+					DrawFlatBottomTriangle(p0, p1, pSplit, color);
+					DrawFlatTopTriangle(p1, pSplit, p2, color);
+				}
+				else	// major left
+				{
+					DrawFlatBottomTriangle(p0, pSplit, p1, color);
+					DrawFlatTopTriangle(pSplit, p1, p2, color);
+				}
+			}
+		}
+		
+		private void DrawFlatTopTriangle(Point p0, Point p1, Point p2, Color color)
+		{
+			// calculate slopes
+			float m0 = (p2.x - p0.x) / (p2.y - p0.y);
+			float m1 = (p2.x - p1.x) / (p2.y - p1.y);
+			
+			// calculate start and end scanlines
+			int yStart = (int)MathF.Ceiling(p0.y - 0.5f);
+			int yEnd = (int)MathF.Ceiling(p2.y - 0.5f);		// the scanline AFTER the last line is drawn
+			
+			for (int y = yStart; y < yEnd; y++)
+			{
+				// calculate line start and end points (x-coordinates)
+				// add 0.5 to y value because we're calculating based on pixel CENTERS
+				float x0 = m0 * (y + 0.5f - p0.y) + p0.x;
+				float x1 = m1 * (y + 0.5f - p1.y) + p1.x;
+				
+				// calculate start and end pixels
+				int xStart = (int)MathF.Ceiling(x0 - 0.5f);
+				int xEnd = (int)MathF.Ceiling(x1 - 0.5f);	// the pixel AFTER the last pixel drawn
+				
+				for (int x = xStart; x < xEnd; x++)
+				{
+					PutPixelInt(x, y, color);
+				}
+			}
+		}
+		
+		private void DrawFlatBottomTriangle(Point p0, Point p1, Point p2, Color color)
+		{
+			// calculate slopes
+			float m0 = (p1.x - p0.x) / (p1.y - p0.y);
+			float m1 = (p2.x - p0.x) / (p2.y - p0.y);
+			
+			// calculate start and end scanlines
+			int yStart = (int)MathF.Ceiling(p0.y - 0.5f);
+			int yEnd = (int)MathF.Ceiling(p2.y - 0.5f);		// the scanline AFTER the last line is drawn
+			
+			for (int y = yStart; y < yEnd; y++)
+			{
+				// calculate line start and end points (x-coordinates)
+				// add 0.5 to y value because we're calculating based on pixel CENTERS
+				float x0 = m0 * (y + 0.5f - p0.y) + p0.x;
+				float x1 = m1 * (y + 0.5f - p0.y) + p0.x;
+				
+				// calculate start and end pixels
+				int xStart = (int)MathF.Ceiling(x0 - 0.5f);
+				int xEnd = (int)MathF.Ceiling(x1 - 0.5f);	// the pixel AFTER the last pixel drawn
+				
+				for (int x = xStart; x < xEnd; x++)
+				{
+					PutPixelInt(x, y, color);
+				}
+			}
+		}
+		
+		/*
 		internal void DrawFilledTriangle(Point p0, Point p1, Point p2, Color color)
 		{	
 			// sort the points so that y0 <= y1 <= y2
 			if (p1.y < p0.y)
 			{
-				Point[] tmp = new Point[]{p0, p1};
-				p0 = tmp[1];
-				p1 = tmp[0];
+				(p0, p1) = (p1, p0);
 			}
 			if (p2.y < p0.y)
 			{
-				Point[] tmp = new Point[]{p0, p2};
-				p0 = tmp[1];
-				p2 = tmp[0];
+				(p0, p2) = (p2, p0);
 			}
 			if (p2.y < p1.y)
 			{
-				Point[] tmp = new Point[]{p1, p2};
-				p1 = tmp[1];
-				p2 = tmp[0];
+				(p1, p2) = (p2, p1);
 			}
 			
 			
@@ -119,7 +265,7 @@ namespace Engine
 				z_right = z02;
 			}
 			
-			for (int y = (int)p0.y; y <= (int)p2.y; y++)
+			for (int y = (int)MathF.Ceiling(p0.y); y < (int)MathF.Ceiling(p2.y); y++)
 			{
 				float x_l = x_left[y-(int)p0.y];
 				float x_r = x_right[y-(int)p0.y];
@@ -127,40 +273,8 @@ namespace Engine
 				
 				for (int x = (int)x_l; x < x_r; x++)
 				{
-					PutPixel(x, y, z_segment[x - (int)x_l], color);
-				}
-			}
-		}
-		
-		internal void DrawLine(Point p0, Point p1, Color color)
-		{
-			float dx = p1.x - p0.x;
-			float dy = p1.y - p0.y;
-			
-			if (MathF.Abs(dx) > MathF.Abs(dy))	// line is horizontal-ish
-			{
-				if (dx < 0)	// make sure it's left to right
-				{
-					(p1, p0) = (p0, p1);
-				}
-
-				float[] ys = Interpolate(p0.x, p0.y, p1.x, p1.y);
-				for (int x = (int)p0.x; x <= (int)p1.x ; x++)
-				{
-					PutPixel(x, ys[x - (int)p0.x], color);
-				}
-			}
-			else	// line is vertical-ish
-			{
-				if (dy < 0)	// make sure it's bottom to top
-				{
-					(p1, p0) = (p0, p1);
-				}
-				
-				float[] xs = Interpolate(p0.y, p0.x, p1.y, p1.x);
-				for (int y = (int)p0.y; y <= (int)p1.y ; y++)
-				{
-					PutPixel(xs[y - (int)p0.y], y, color);
+					// PutPixel(x, y, z_segment[x - (int)x_l], color);
+					PutPixelInt(x, y, color);
 				}
 			}
 		}
@@ -184,5 +298,6 @@ namespace Engine
 			}
 			return values.ToArray();
 		}
+		*/
 	}
 }

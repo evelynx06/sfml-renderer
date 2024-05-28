@@ -380,6 +380,21 @@ namespace Engine
 			{
 				return $"[{x}; {y}; {z}]";
 			}
+			
+			public static Point operator +(Point left, Point right)
+			{
+				return new Point(left.x + right.x, left.y + right.y, left.z);
+			}
+			
+			public static Point operator -(Point left, Point right)
+			{
+				return new Point(left.x - right.x, left.y - right.y, left.z);
+			}
+			
+			public static Point operator *(Point p, float factor)
+			{
+				return new Point(p.x * factor, p.y * factor, p.z);
+			}
 		}
 		
 		/// <summary>
