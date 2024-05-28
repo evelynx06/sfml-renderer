@@ -63,6 +63,7 @@ namespace Engine
 			{
 				Console.WriteLine("Found object '{0}'", vertices[0][1]);
 				vertices.RemoveAt(0);
+				vertexTextureCoordinates.RemoveAt(0);
 				faces.RemoveAt(0);
 			}
 			
@@ -74,7 +75,8 @@ namespace Engine
 			while (objectsLeft)
 			{
 				objectsLeft = false;
-				List<Vector> objectVertices = new();
+				List<Vector3> objectVertices = new();
+				List<Vector2> objectTextureCoordinates = new();
 				List<Triangle> objectTriangles = new();
 				
 				for (int i = 0; i < vertices.Count; i++)
@@ -88,11 +90,27 @@ namespace Engine
 					}
 					else
 					{
-						CultureInfo format = new CultureInfo("en-US");
-						objectVertices.Add(new Vector(Convert.ToSingle(vertices[i][0], format),
+						CultureInfo format = new("en-US");
+						objectVertices.Add(new Vector3(Convert.ToSingle(vertices[i][0], format),
 													  Convert.ToSingle(vertices[i][1], format),
-													  Convert.ToSingle(vertices[i][2], format),
-													  1));
+													  Convert.ToSingle(vertices[i][2], format)));
+					}
+				}
+				
+				for (int i = 0; i < vertexTextureCoordinates.Count; i++)
+				{
+					if (vertexTextureCoordinates[i][0] == "new")
+					{
+						// Console.WriteLine("Found object '{0}'", vertices[0][1]);
+						vertices.RemoveRange(0, i+1);
+						// objectsLeft = true;
+						break;
+					}
+					else
+					{
+						CultureInfo format = new("en-US");
+						objectTextureCoordinates.Add(new Vector2(Convert.ToSingle(vertexTextureCoordinates[i][0], format),
+																 Convert.ToSingle(vertexTextureCoordinates[i][1], format)));
 					}
 				}
 				
@@ -121,7 +139,7 @@ namespace Engine
 							
 							foreach (string vertexIndex in faces[i])
 							{
-								Vector vertex = objectVertices[Convert.ToInt32(Regex.Match(vertexIndex, vPattern).ToString())-1];
+								Vector3 vertex = objectVertices[Convert.ToInt32(Regex.Match(vertexIndex, vPattern).ToString())-1];
 								points.Add(new Vector3m(vertex.x, vertex.y, vertex.z));
 							}
 							
@@ -144,7 +162,24 @@ namespace Engine
 					}
 				}
 				
-				objects.Add(new(objectVertices.ToArray(), objectTriangles.ToArray()));
+				TextureVertex[] textureVertices = new TextureVertex[objectVertices.Count];
+				if (objectTextureCoordinates.Count == 0)
+				{
+					for (int i = 0; i < textureVertices.Length; i++)
+					{
+						textureVertices[i] = new(objectVertices[i], objectVertices[i].Vector2);
+					}
+				}
+				else
+				{
+					for (int i = 0; i < textureVertices.Length; i++)
+					{
+						textureVertices[i] = new(objectVertices[i], objectTextureCoordinates[i]);
+					}
+				}
+				
+				
+				objects.Add(new Model(textureVertices, objectTriangles.ToArray()));
 			}
 			
 			return objects.ToArray();

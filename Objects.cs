@@ -44,7 +44,7 @@ namespace Engine
 			
 			/// <param name="translation">The translation vector to generate a transformation matrix for.</param>
 			/// <returns>Transformation matrix for a specified translation.</returns>
-			public static Matrix MakeTranslationMatrix(Vector translation)
+			public static Matrix MakeTranslationMatrix(Vector3 translation)
 			{
 				return new Matrix(1, 0, 0, translation[0],
 								  0, 1, 0, translation[1],
@@ -69,7 +69,7 @@ namespace Engine
 		public class Instance
 		{
 			public Model model;
-			public Vector position;
+			public Vector3 position;
 			public Matrix orientation;
 			public float scale;
 			
@@ -78,7 +78,7 @@ namespace Engine
 				get { return Methods.MakeTranslationMatrix(position) * (orientation * Methods.MakeScalingMatrix(scale)); }
 			}
 			
-			public Instance(Model model, Vector position, float xRotation=0, float yRotation=0, float zRotation=0, float scale=1)
+			public Instance(Model model, Vector3 position, float xRotation=0, float yRotation=0, float zRotation=0, float scale=1)
 			{
 				this.model = model;
 				this.position = position;
@@ -92,41 +92,41 @@ namespace Engine
 		/// </summary>
 		public class Model
 		{
-			public Vector[] vertices;
+			public TextureVertex[] vertices;
 			public Triangle[] triangles;
-			public Vector boundsCenter;
+			public Vector3 boundsCenter;
 			public float boundsRadius;
 			
-			public Model(Vector[] vertices, Triangle[] triangles, float boundsRadius=0)
+			public Model(TextureVertex[] vertices, Triangle[] triangles, float boundsRadius=0)
 			{
 				this.vertices = vertices;
 				this.triangles = triangles;
-				this.boundsCenter = FindCenter();
+				this.boundsCenter = FindCenter().Vector3;
 				this.boundsRadius = boundsRadius == 0 ? FindBoundingRadius() : boundsRadius;
 			}
 			
-			public Vector FindCenter()
+			public Vector4 FindCenter()
 			{
 				float meanX = 0;
 				float meanY = 0;
 				float meanZ = 0;
 				
-				foreach (Vector vertex in vertices)
+				foreach (TextureVertex vertex in vertices)
 				{
-					meanX += vertex[0];
-					meanY += vertex[1];
-					meanZ += vertex[2];
+					meanX += vertex.position[0];
+					meanY += vertex.position[1];
+					meanZ += vertex.position[2];
 				}
 				int len = vertices.Length;
-				return new Vector(meanX/len, meanY/len, meanZ/len, 1);
+				return new Vector4(meanX/len, meanY/len, meanZ/len, 1);
 			}
 			
 			public float FindBoundingRadius()
 			{
 				float r = 0;
-				foreach (Vector vertex in vertices)
+				foreach (TextureVertex vertex in vertices)
 				{
-					float dist = Vector.Distance(boundsCenter, vertex);
+					float dist = Vector3.Distance(boundsCenter, vertex.position);
 					r = dist > r ? dist : r;
 				}
 				
@@ -139,7 +139,7 @@ namespace Engine
 		/// </summary>
 		public class Camera
 		{
-			public Vector position;
+			public Vector3 position;
 			public Matrix xOrientation;
 			public Matrix yOrientation;
 			
@@ -148,16 +148,16 @@ namespace Engine
 				get { return yOrientation * xOrientation; }
 			}
 			
-			public Camera(Vector position, float xRotation=0, float yRotation=0)
+			public Camera(Vector3 position, float xRotation=0, float yRotation=0)
 			{
 				this.position = position;
 				this.xOrientation = Methods.MakeOXRotationMatrix(xRotation);
 				this.yOrientation = Methods.MakeOYRotationMatrix(yRotation);
 			}
 			
-			public void Translate(Vector vector)
+			public void Translate(Vector3 vector)
 			{
-				position += yOrientation * vector;
+				position += yOrientation * new Vector4(vector, 1);
 			}
 			
 			public void Rotate(char axis, float degrees)

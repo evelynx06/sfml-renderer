@@ -6,8 +6,8 @@ namespace Engine
 {
 	public class Viewer
 	{
-		private Renderer renderer = default!;
-		private Dictionary<string, Scene> scenes = default!;
+		private Renderer renderer = null!;
+		private Dictionary<string, Scene> scenes = new(){};
 		private float deltaTime;
 		
 		public Scene activeScene;
@@ -17,12 +17,15 @@ namespace Engine
 		public Viewer(int windowWidth, int windowHeight, float fov, Scene mainScene)
 		{	
 			renderer = new(windowWidth, windowHeight, fov, 1);
-			// AddScene(mainScene);
+			
+			Console.WriteLine(mainScene);
+			AddScene(mainScene);
 			activeScene = mainScene;
 		}
 		
 		public void AddScene(Scene scene)
 		{
+			Console.WriteLine(scene.name);
 			scenes.Add(scene.name, scene);
 		}
 		

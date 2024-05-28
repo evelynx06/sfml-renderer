@@ -188,20 +188,39 @@ namespace Engine
 		}
 		
 		/// <summary>
-		/// A point (or a vector) in 3D space, expressed in homogenous coordinates (w=1 for point, w=0 for vector)
+		/// A 4-dimensional vector.
 		/// </summary>
-		public class Vector
+		public class Vector4
 		{
 			public float x;
 			public float y;
 			public float z;
 			public float w;
 			
+			public Vector3 Vector3 { get => new(x, y, z); }
+			public Vector2 Vector2 { get => new(x, y); }
 			
-			public Vector()
+			
+			public Vector4()
 			{ }
 			
-			public Vector(float x, float y, float z, float w)
+			public Vector4(Vector3 v, float w)
+			{
+				this.x = v.x;
+				this.y = v.y;
+				this.z = v.z;
+				this.w = w;
+			}
+			
+			public Vector4(Vector2 v, float z, float w)
+			{
+				this.x = v.x;
+				this.y = v.y;
+				this.z = z;
+				this.w = w;
+			}
+			
+			public Vector4(float x, float y, float z, float w)
 			{
 				this.x = x;
 				this.y = y;
@@ -248,29 +267,29 @@ namespace Engine
 				}
 			}
 			
-			public static Vector operator +(Vector v1, Vector v2)
+			public static Vector4 operator +(Vector4 v1, Vector4 v2)
 			{
-				return new Vector(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w);
+				return new Vector4(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z, v1.w + v2.w);
 			}
 			
-			public static Vector operator -(Vector v1, Vector v2)
+			public static Vector4 operator -(Vector4 v1, Vector4 v2)
 			{
-				return new Vector(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w);
+				return new Vector4(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z, v1.w - v2.w);
 			}
 			
-			public static Vector operator *(Vector v, float scalar)
+			public static Vector4 operator *(Vector4 v, float scalar)
 			{
-				return new Vector(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
+				return new Vector4(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
 			}
 			
-			public static Vector operator *(float scalar, Vector v)
+			public static Vector4 operator *(float scalar, Vector4 v)
 			{
-				return new Vector(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
+				return new Vector4(v.x * scalar, v.y * scalar, v.z * scalar, v.w * scalar);
 			}
 			
-			public static Vector operator *(Matrix mat, Vector vec)
+			public static Vector4 operator *(Matrix mat, Vector4 vec)
 			{
-				Vector result = new();
+				Vector4 result = new();
 				
 				for (int i = 0; i < 4; i++)
 				{
@@ -283,41 +302,41 @@ namespace Engine
 				return result;
 			}
 			
-			public static Vector operator /(Vector v, float scalar)
+			public static Vector4 operator /(Vector4 v, float scalar)
 			{
-				return new Vector(v.x/scalar, v.y/scalar, v.z/scalar, v.w/scalar);
+				return new Vector4(v.x/scalar, v.y/scalar, v.z/scalar, v.w/scalar);
 			}
 			
-			public static float Dot(Vector v1, Vector v2)
+			public static float Dot(Vector4 v1, Vector4 v2)
 			{
 				return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z + v1.w*v2.w;
 			}
 			
-			public float Dot(Vector other)
+			public float Dot(Vector4 other)
 			{
 				return this.x*other.x + this.y*other.y + this.z*other.z + this.w*other.w;
 			}
 			
-			public static Vector Cross(Vector v1, Vector v2)
-			{
-				return new Vector(v1.y*v2.z - v1.z*v2.y,
-								  v1.z*v2.x - v1.x*v2.z,
-								  v1.x*v2.y - v1.y*v2.x,
-								  v1.w);
-			}
+			// public static Vector4 Cross(Vector4 v1, Vector4 v2)
+			// {
+			// 	return new Vector4(v1.y*v2.z - v1.z*v2.y,
+			// 					  v1.z*v2.x - v1.x*v2.z,
+			// 					  v1.x*v2.y - v1.y*v2.x,
+			// 					  v1.w);
+			// }
 			
-			public static float Distance(Vector v1, Vector v2)
-			{
-				Vector a = v1/v1.w;
-				Vector b = v2/v2.w;
-				return MathF.Abs(MathF.Sqrt((b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y) + (b.z-a.z)*(b.z-a.z)));
-			}
+			// public static float Distance(Vector4 v1, Vector4 v2)
+			// {
+			// 	Vector4 a = v1/v1.w;
+			// 	Vector4 b = v2/v2.w;
+			// 	return MathF.Abs(MathF.Sqrt((b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y) + (b.z-a.z)*(b.z-a.z)));
+			// }
 			
-			public Vector Normalized()
-			{
-				float magnitude = MathF.Sqrt(x*x + y*y + z*z);
-				return new Vector(x/magnitude, y/magnitude, z/magnitude, w);
-			}
+			// public Vector4 Normalized()
+			// {
+			// 	float magnitude = MathF.Sqrt(x*x + y*y + z*z);
+			// 	return new Vector4(x/magnitude, y/magnitude, z/magnitude, w);
+			// }
 
 			public override string ToString()
 			{
@@ -326,14 +345,201 @@ namespace Engine
 		}
 		
 		/// <summary>
+		/// A 3-dimensional vector.
+		/// </summary>
+		public class Vector3
+		{
+			public float x;
+			public float y;
+			public float z;
+			
+			public Vector2 Vector2 { get => new(x, y); }
+			
+			
+			public Vector3()
+			{ }
+			
+			public Vector3(Vector4 v)
+			{
+				this.x = v.x;
+				this.y = v.y;
+				this.z = v.z;
+			}
+			
+			public Vector3(Vector2 v, float z)
+			{
+				this.x = v.x;
+				this.y = v.y;
+				this.z = z;
+			}
+			
+			public Vector3(float x, float y, float z)
+			{
+				this.x = x;
+				this.y = y;
+				this.z = z;
+			}
+			
+			public float this[int i]
+			{
+				get => GetValue(i);
+				set => SetValue(i, value);
+			}
+			
+			private float GetValue(int index)
+			{
+				return index switch
+				{
+					0 => x,
+					1 => y,
+					2 => z,
+					_ => throw new IndexOutOfRangeException(),
+				};
+			}
+			
+			private void SetValue(int index, float value)
+			{
+				switch (index)
+				{
+					case 0:
+						x = value;
+						break;
+					case 1:
+						y = value;
+						break;
+					case 2:
+						z = value;
+						break;
+					default:
+						throw new IndexOutOfRangeException();
+				}
+			}
+			
+			public static Vector3 operator +(Vector3 v1, Vector3 v2)
+			{
+				return new Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+			}
+			
+			public static Vector3 operator +(Vector3 v1, Vector4 v2)
+			{
+				return new Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+			}
+			
+			public static Vector3 operator -(Vector3 v1, Vector3 v2)
+			{
+				return new Vector3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
+			}
+			
+			public static Vector3 operator -(Vector3 v1, Vector4 v2)
+			{
+				return new Vector3(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z);
+			}
+			
+			public static Vector3 operator *(Vector3 v, float scalar)
+			{
+				return new Vector3(v.x * scalar, v.y * scalar, v.z * scalar);
+			}
+			
+			public static Vector3 operator *(float scalar, Vector3 v)
+			{
+				return new Vector3(v.x * scalar, v.y * scalar, v.z * scalar);
+			}
+			
+			public static Vector3 operator /(Vector3 v, float scalar)
+			{
+				return new Vector3(v.x/scalar, v.y/scalar, v.z/scalar);
+			}
+			
+			public static float Dot(Vector3 v1, Vector3 v2)
+			{
+				return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
+			}
+			
+			public float Dot(Vector3 other)
+			{
+				return this.x*other.x + this.y*other.y + this.z*other.z;
+			}
+			
+			public static Vector3 Cross(Vector3 v1, Vector3 v2)
+			{
+				return new Vector3(v1.y*v2.z - v1.z*v2.y,
+								  v1.z*v2.x - v1.x*v2.z,
+								  v1.x*v2.y - v1.y*v2.x);
+			}
+			
+			public static float Distance(Vector3 v1, Vector3 v2)
+			{
+				return MathF.Abs(MathF.Sqrt((v2.x-v1.x)*(v2.x-v1.x) + (v2.y-v1.y)*(v2.y-v1.y) + (v2.z-v1.z)*(v2.z-v1.z)));
+			}
+			
+			public Vector3 Normalized()
+			{
+				float magnitude = MathF.Sqrt(x*x + y*y + z*z);
+				return new Vector3(x/magnitude, y/magnitude, z/magnitude);
+			}
+
+			public override string ToString()
+			{
+				return $"[{x}; {y}; {z}]";
+			}
+		}
+		
+		/// <summary>
+		/// A 2-dimensional vector.
+		/// </summary>
+		public class Vector2
+		{
+			public float x;
+			public float y;
+			
+			public Vector2(Vector4 v)
+			{
+				this.x = v.x;
+				this.y = v.y;
+			}
+			
+			public Vector2(Vector3 v)
+			{
+				this.x = v.x;
+				this.y = v.y;
+			}
+			
+			public Vector2(float x, float y)
+			{
+				this.x = x;
+				this.y = y;
+			}
+			
+			public override string ToString()
+			{
+				return $"[{x}; {y}]";
+			}
+			
+			public static Vector2 operator +(Vector2 left, Vector2 right)
+			{
+				return new Vector2(left.x + right.x, left.y + right.y);
+			}
+			
+			public static Vector2 operator -(Vector2 left, Vector2 right)
+			{
+				return new Vector2(left.x - right.x, left.y - right.y);
+			}
+			
+			public static Vector2 operator *(Vector2 p, float factor)
+			{
+				return new Vector2(p.x * factor, p.y * factor);
+			}
+		}
+		
+		/// <summary>
 		/// A plane in 3D space, defined by a normal vector (automatically normalised) and a distance from the origin.
 		/// </summary>
 		internal class Plane
 		{
-			public Vector normal;
+			public Vector3 normal;
 			public float distance;
 			
-			public Plane(Vector normal, float distance)
+			public Plane(Vector3 normal, float distance)
 			{
 				this.normal = normal.Normalized();
 				this.distance = distance;
@@ -343,9 +549,9 @@ namespace Engine
 			/// Calculate the signed distance to a point from the plane.
 			/// </summary>
 			/// <param name="vertex">The point to calculate the distance to.</param>
-			public float SignedDistance(Vector vertex)
+			public float SignedDistance(Vector3 vertex)
 			{
-				return Vector.Dot(normal, vertex) + distance;
+				return Vector3.Dot(normal, vertex) + distance;
 			}
 			
 			/// <summary>
@@ -353,9 +559,9 @@ namespace Engine
 			/// </summary>
 			/// <param name="pointA">First end of the line segment.</param>
 			/// <param name="pointB">Second end of the line segment.</param>
-			public Vector LineIntersect(Vector pointA, Vector pointB)
+			public Vector3 LineIntersect(Vector3 pointA, Vector3 pointB)
 			{	
-				float t = (-distance - Vector.Dot(normal, pointA)) / Vector.Dot(normal, pointB-pointA);
+				float t = (-distance - Vector3.Dot(normal, pointA)) / Vector3.Dot(normal, pointB-pointA);
 				return pointA + t*(pointB-pointA);
 			}
 		}
@@ -418,6 +624,18 @@ namespace Engine
 			public override string ToString()
 			{
 				return $"[{v0}, {v1}, {v2}, {color}]";
+			}
+		}
+		
+		public class TextureVertex
+		{
+			public Vector3 position;
+			public Vector2 textureCoordinate;
+			
+			public TextureVertex(Vector3 position, Vector2 textureCoordinate)
+			{
+				this.position = position;
+				this.textureCoordinate = textureCoordinate;
 			}
 		}
 	}

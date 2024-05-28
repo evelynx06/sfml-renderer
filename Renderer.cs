@@ -47,11 +47,11 @@ namespace Engine
 			viewportWidth = MathF.Tan((fov/2)*(MathF.PI/180))*projectionPlaneZ;
 			viewportHeight = aspectRatio;
 			this.projectionPlaneZ = projectionPlaneZ;
-			this.clippingPlanes = new Plane[]{new Plane(new Vector( 0, 0, 1, 0), -projectionPlaneZ),	// near
-											  new Plane(new Vector( 1, 0, 1, 0), 0),		// left
-											  new Plane(new Vector(-1, 0, 1, 0), 0),		// right
-											  new Plane(new Vector( 0, 1, 1, 0), 0),		// bottom
-											  new Plane(new Vector( 0,-1, 1, 0), 0)};		// top
+			this.clippingPlanes = new Plane[]{new Plane(new Vector3( 0, 0, 1), -projectionPlaneZ),	// near
+											  new Plane(new Vector3( 1, 0, 1), 0),		// left
+											  new Plane(new Vector3(-1, 0, 1), 0),		// right
+											  new Plane(new Vector3( 0, 1, 1), 0),		// bottom
+											  new Plane(new Vector3( 0,-1, 1), 0)};		// top
 		}
 		
 		internal void RenderScene(Scene scene, ref Canvas canvas)
@@ -75,7 +75,7 @@ namespace Engine
 			Point[] projected = new Point[model.vertices.Length];
 			for (int i = 0; i < projected.Length; i++)
 			{
-				projected[i] = ProjectVertex(model.vertices[i]);
+				projected[i] = ProjectVertex(model.vertices[i].position);
 			}
 			if (useBackfaceCulling)
 			{
@@ -85,11 +85,12 @@ namespace Engine
 					{
 						RenderTriangle(t, projected, canvas);
 					}
-					else{
-						Vector triangleNormal = Vector.Cross(model.vertices[t.v1] - model.vertices[t.v0], model.vertices[t.v2] - model.vertices[t.v0]);
-						// canvas.DrawWireTriangle(ProjectVertex(triangleNormal + model.vertices[t.v2]), projected[t.v2], projected[t.v1], t.color);
-					 	// canvas.DrawWireTriangle(projected[t.v0], projected[t.v1], projected[t.v2], Color.White);
-					}
+					// else{
+					// 	Vector3 triangleNormal = Vector3.Cross(model.vertices[t.v1].position - model.vertices[t.v0].position,
+					// 										   model.vertices[t.v2].position - model.vertices[t.v0].position);
+					// 	canvas.DrawWireTriangle(ProjectVertex(triangleNormal + model.vertices[t.v2].position), projected[t.v2], projected[t.v1], t.color);
+					//  	canvas.DrawWireTriangle(projected[t.v0], projected[t.v1], projected[t.v2], Color.White);
+					// }
 				}
 			}
 			else
@@ -102,15 +103,15 @@ namespace Engine
 			
 		}
 		
-		private static bool BackfaceCullTriangle(Triangle t, Vector[] vertices)
+		private static bool BackfaceCullTriangle(Triangle t, TextureVertex[] vertices)
 		{
 			// N = (B - A) x (C - A)
-			Vector triangleNormal = Vector.Cross(vertices[t.v1] - vertices[t.v0], vertices[t.v2] - vertices[t.v0]);
+			Vector3 triangleNormal = Vector3.Cross(vertices[t.v1].position - vertices[t.v0].position, vertices[t.v2].position - vertices[t.v0].position);
 			
 			// V = camPos - A	(camPos is [0, 0, 0])
-			Vector triangleToCamera = -1 * vertices[t.v2];
+			Vector3 triangleToCamera = -1 * vertices[t.v2].position;
 			
-			return Vector.Dot(triangleToCamera, triangleNormal) <= 0;
+			return Vector3.Dot(triangleToCamera, triangleNormal) <= 0;
 		}
 		
 		private void RenderTriangle(Triangle t, Point[] projected, Canvas canvas)
@@ -125,7 +126,7 @@ namespace Engine
 			}
 		}
 		
-		private Point ProjectVertex(Vector v)
+		private Point ProjectVertex(Vector3 v)
 		{
 			float x;
 			float y;
@@ -150,14 +151,14 @@ namespace Engine
 		
 		private Model? TransformAndClip(Model model, float scale, Matrix transform)
 		{
-			Vector center = transform * model.boundsCenter;
+			Vector4 center = transform * model.FindCenter();
 			float radius = scale * model.boundsRadius;
 			
 			int tmp = 0;
 			
 			foreach (Plane p in clippingPlanes)
 			{
-				float d = p.SignedDistance(center);
+				float d = p.SignedDistance(center.Vector3);
 				if (d < -radius)
 				{
 					return null;
@@ -168,10 +169,10 @@ namespace Engine
 				}
 			}
 			
-			List<Vector> vertices = new();
-			foreach (Vector v in model.vertices)
+			List<TextureVertex> vertices = new();
+			foreach (TextureVertex v in model.vertices)
 			{
-				vertices.Add(transform * v);
+				vertices.Add(new TextureVertex((transform * new Vector4(v.position, 1)).Vector3, v.textureCoordinate));
 			}
 			
 			if (tmp == clippingPlanes.Length)
@@ -194,11 +195,11 @@ namespace Engine
 			return new Model(vertices.ToArray(), triangles, model.boundsRadius);
 		}
 		
-		private static void ClipTriangle(Triangle triangle, Plane plane, ref List<Triangle> clippedTriangles, ref List<Vector> vertices)
+		private static void ClipTriangle(Triangle triangle, Plane plane, ref List<Triangle> clippedTriangles, ref List<TextureVertex> vertices)
 		{
-			float d0 = plane.SignedDistance(vertices[triangle.v0]);
-			float d1 = plane.SignedDistance(vertices[triangle.v1]);
-			float d2 = plane.SignedDistance(vertices[triangle.v2]);
+			float d0 = plane.SignedDistance(vertices[triangle.v0].position);
+			float d1 = plane.SignedDistance(vertices[triangle.v1].position);
+			float d2 = plane.SignedDistance(vertices[triangle.v2].position);
 			
 			if (d0 >= 0 && d1 >= 0 && d2 >= 0)
 			{
@@ -234,11 +235,11 @@ namespace Engine
 					c = triangle.v1;
 				}
 				
-				Vector bPrime = plane.LineIntersect(vertices[a], vertices[b]);
-				Vector cPrime = plane.LineIntersect(vertices[a], vertices[c]);
+				Vector3 bPrime = plane.LineIntersect(vertices[a].position, vertices[b].position);
+				Vector3 cPrime = plane.LineIntersect(vertices[a].position, vertices[c].position);
 				
-				vertices.Add(bPrime);
-				vertices.Add(cPrime);
+				vertices.Add(new TextureVertex(bPrime, vertices[b].textureCoordinate));		// THIS CAUSES THE TEXTURE COORDINATES TO MOVE WHEN CLIPPED
+				vertices.Add(new TextureVertex(cPrime, vertices[c].textureCoordinate));		// but the clipping doesn't really work anyway...
 				
 				clippedTriangles.Add(new Triangle(triangle.v0, vertices.Count-2, vertices.Count-1, triangle.color));
 				return;		// the returned triangle has the vertices [A, B', C']
@@ -268,11 +269,11 @@ namespace Engine
 					c = triangle.v2;
 				}
 				
-				Vector aPrime = plane.LineIntersect(vertices[a], vertices[c]);
-				Vector bPrime = plane.LineIntersect(vertices[b], vertices[c]);
+				Vector3 aPrime = plane.LineIntersect(vertices[a].position, vertices[c].position);
+				Vector3 bPrime = plane.LineIntersect(vertices[b].position, vertices[c].position);
 				
-				vertices.Add(aPrime);
-				vertices.Add(bPrime);
+				vertices.Add(new TextureVertex(aPrime, vertices[c].textureCoordinate));	// THIS CAUSES THE TEXTURE COORDINATES TO MOVE WHEN CLIPPED
+				vertices.Add(new TextureVertex(bPrime, vertices[c].textureCoordinate));	// but the clipping doesn't really work anyway...
 				
 				clippedTriangles.Add(new Triangle(triangle.v0, triangle.v1, vertices.Count-2, triangle.color));
 				clippedTriangles.Add(new Triangle(vertices.Count-2, triangle.v1, vertices.Count-1, triangle.color));
