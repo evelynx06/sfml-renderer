@@ -21,6 +21,8 @@ namespace Engine
 			List<string[]> vertexNormals = new();
 			List<string[]> faces = new();
 			
+			Console.WriteLine("Parsing .obj file...");
+			
 			using (StreamReader sr = new(path))
 			{
 				while (sr.Peek() >= 0)	// sr.Peek() returns -1 when there are no characters left to read
@@ -105,7 +107,7 @@ namespace Engine
 					}
 					else
 					{
-						string vPattern = @"^[0-9]*(?=/)";
+						string vPattern = @"^[0-9]*(?=/|$)";
 						if (faces[i].Length == 3)
 						{
 							objectTriangles.Add(new Triangle(Convert.ToInt32(Regex.Match(faces[i][0], vPattern).ToString())-1,
