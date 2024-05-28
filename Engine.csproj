@@ -13,6 +13,7 @@
     <PackageReference Include="SFML.Graphics" Version="2.5.1" />
     <PackageReference Include="SFML.System" Version="2.5.1" />
     <PackageReference Include="SFML.Window" Version="2.5.1" />
+	<PackageReference Include="EarClipper" Version="1.2.0"/>
   </ItemGroup>
 
 </Project>

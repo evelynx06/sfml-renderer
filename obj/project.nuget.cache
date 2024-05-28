@@ -1,11 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "SqCTjGbsbvhUUOEEGdssBMhXHiczDckBuetDZuveGm6Y4JLlbCzLfHzvWbYWLC+vTre+w27Acax9cp4GcR33BQ==",
+  "dgSpecHash": "cyrffx0dBAzzeL5o1lOBiNNxz6l1bEYun47xEsH6BQ1OepQBsvb1bcdy5v6ywX6fnUqUtFYM6BSekzpIFP2N0Q==",
   "success": true,
   "projectFilePath": "C:\\Users\\frej.lindelof\\documents\\3d graphics\\Engine\\Engine.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\frej.lindelof\\.nuget\\packages\\communitytoolkit.highperformance\\8.2.2\\communitytoolkit.highperformance.8.2.2.nupkg.sha512",
     "C:\\Users\\frej.lindelof\\.nuget\\packages\\csfml\\2.5.2\\csfml.2.5.2.nupkg.sha512",
+    "C:\\Users\\frej.lindelof\\.nuget\\packages\\earclipper\\1.2.0\\earclipper.1.2.0.nupkg.sha512",
+    "C:\\Users\\frej.lindelof\\.nuget\\packages\\petero.numbers\\1.8.2\\petero.numbers.1.8.2.nupkg.sha512",
     "C:\\Users\\frej.lindelof\\.nuget\\packages\\sfml.graphics\\2.5.1\\sfml.graphics.2.5.1.nupkg.sha512",
     "C:\\Users\\frej.lindelof\\.nuget\\packages\\sfml.system\\2.5.1\\sfml.system.2.5.1.nupkg.sha512",
     "C:\\Users\\frej.lindelof\\.nuget\\packages\\sfml.window\\2.5.1\\sfml.window.2.5.1.nupkg.sha512"

@@ -87,8 +87,8 @@ namespace Engine
 					}
 					else{
 						Vector triangleNormal = Vector.Cross(model.vertices[t.v1] - model.vertices[t.v0], model.vertices[t.v2] - model.vertices[t.v0]);
-						canvas.DrawWireTriangle(ProjectVertex(triangleNormal + model.vertices[t.v2]), projected[t.v2], projected[t.v1], t.color);
-					 	canvas.DrawWireTriangle(projected[t.v0], projected[t.v1], projected[t.v2], Color.White);
+						// canvas.DrawWireTriangle(ProjectVertex(triangleNormal + model.vertices[t.v2]), projected[t.v2], projected[t.v1], t.color);
+					 	// canvas.DrawWireTriangle(projected[t.v0], projected[t.v1], projected[t.v2], Color.White);
 					}
 				}
 			}

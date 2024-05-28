@@ -10,17 +10,19 @@ namespace TestProject
 	{
 		public override void Init()
 		{
-			Vector[] cubeVertices = new Vector[] {new(-1, -1, -1, 1), new(1, -1, -1, 1), new(-1, 1, -1, 1), new(1, 1, -1, 1),
-												  new(-1, -1, 1, 1), new(1, -1, 1, 1), new(-1, 1, 1, 1), new(1, 1, 1, 1)};
-			Triangle[] cubeTriangles = new Triangle[] {new(0, 2, 1, Color.Red), new(2, 3, 1, Color.Red), new(1, 3, 5, Color.Green), new(3, 7, 5, Color.Green),
-													   new(2, 6, 3, Color.Blue), new(3, 6, 7, Color.Blue), new(4, 5, 7, Color.Magenta), new(4, 7, 6, Color.Magenta),
-													   new(0, 4, 2, Color.Yellow), new(2, 4, 6, Color.Yellow), new(0, 1, 4, Color.Cyan), new(1, 5, 4, Color.Cyan)};
+			// Vector[] cubeVertices = new Vector[] {new(-1, -1, -1, 1), new(1, -1, -1, 1), new(-1, 1, -1, 1), new(1, 1, -1, 1),
+			// 									  new(-1, -1, 1, 1), new(1, -1, 1, 1), new(-1, 1, 1, 1), new(1, 1, 1, 1)};
+			// Triangle[] cubeTriangles = new Triangle[] {new(0, 2, 1, Color.Red), new(2, 3, 1, Color.Red), new(1, 3, 5, Color.Green), new(3, 7, 5, Color.Green),
+			// 										   new(2, 6, 3, Color.Blue), new(3, 6, 7, Color.Blue), new(4, 5, 7, Color.Magenta), new(4, 7, 6, Color.Magenta),
+			// 										   new(0, 4, 2, Color.Yellow), new(2, 4, 6, Color.Yellow), new(0, 1, 4, Color.Cyan), new(1, 5, 4, Color.Cyan)};
 			
-			Model cube = new(cubeVertices, cubeTriangles);
-				
+			// Model cube = new(cubeVertices, cubeTriangles);
+			
+			Model cube = Files.ReadObjFile(@"TestProject\assets\blenderCube.obj")[0];
+			Model thing = Files.ReadObjFile(@"TestProject\assets\thing.obj")[0];
 				
 			objects = new Instance[] {new(cube, new(-1.5f, 0f, 7f, 1f), 0, 0, 0, 0.75f),
-									  new(cube, new(1.25f, 2.5f, 7.5f, 1f), 0, -195) };
+									  new(thing, new(1.25f, 2.5f, 7.5f, 1f), 0, -195) };
 									//   new(cube, new(0f, 0f, -10f, 1f), 0, -195)};
 			camera = new(new(-3, 2, 1, 1), 0, 30);
 		}

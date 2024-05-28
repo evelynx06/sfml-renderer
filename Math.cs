@@ -399,6 +399,11 @@ namespace Engine
 				this.v2 = v2;
 				this.color = color;
 			}
+
+			public override string ToString()
+			{
+				return $"[{v0}, {v1}, {v2}, {color}]";
+			}
 		}
 	}
 }
