@@ -21,10 +21,10 @@ namespace TestProject
 			Model cube = Files.ReadObjFile(@"TestProject\assets\blenderCube.obj")[0];
 			Model thing = Files.ReadObjFile(@"TestProject\assets\thing.obj")[0];
 				
-			objects = new Instance[] {new(cube, new(-1.5f, 0f, 7f, 1f), 0, 0, 0, 0.75f),
-									  new(thing, new(1.25f, 2.5f, 7.5f, 1f), 0, -195) };
+			objects = new Instance[] {new(cube, new(-1.5f, 0f, 7f), 0, 0, 0, 0.75f),
+									  new(thing, new(1.25f, 2.5f, 7.5f), 0, -195) };
 									//   new(cube, new(0f, 0f, -10f, 1f), 0, -195)};
-			camera = new(new(-3, 2, 1, 1), 0, 30);
+			camera = new(new(-3, 2, 1), 0, 30);
 		}
 	
 		public override void Update(float dt)
@@ -48,27 +48,27 @@ namespace TestProject
 			
 			if (Keyboard.IsKeyPressed(Keyboard.Key.W))		// positive z: forward
 			{
-				camera.Translate(new Vector(0, 0, 4*dt, 0));
+				camera.Translate(new Vector3(0, 0, 4*dt));
 			}
 			if (Keyboard.IsKeyPressed(Keyboard.Key.S))		// negative z: backward
 			{
-				camera.Translate(new Vector(0, 0, -4*dt, 0));
+				camera.Translate(new Vector3(0, 0, -4*dt));
 			}
 			if (Keyboard.IsKeyPressed(Keyboard.Key.D))		// positive x: right
 			{
-				camera.Translate(new Vector(4*dt, 0, 0, 0));
+				camera.Translate(new Vector3(4*dt, 0, 0));
 			}
 			if (Keyboard.IsKeyPressed(Keyboard.Key.A))		// negative x: left
 			{
-				camera.Translate(new Vector(-4*dt, 0, 0, 0));
+				camera.Translate(new Vector3(-4*dt, 0, 0));
 			}
 			if (Keyboard.IsKeyPressed(Keyboard.Key.Space))	// positive y: up
 			{
-				camera.Translate(new Vector(0, 4*dt, 0, 0));
+				camera.Translate(new Vector3(0, 4*dt, 0));
 			}
 			if (Keyboard.IsKeyPressed(Keyboard.Key.LShift))	// negative y: down
 			{
-				camera.Translate(new Vector(0, -4*dt, 0, 0));
+				camera.Translate(new Vector3(0, -4*dt, 0));
 			}
 		}
 	}
