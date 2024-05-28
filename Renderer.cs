@@ -4,24 +4,48 @@ using SFML.Graphics;
 
 namespace Engine
 {
-	class Renderer
+	internal class Renderer
 	{
-		public int canvasWidth;
-		public int canvasHeight;
-		public int viewportWidth;
-		public int viewportHeight;
-		public float projectionPlaneZ;
-		public Plane[] clippingPlanes;
+		private int canvasWidth;
+		internal int CanvasWidth
+		{
+			get => canvasWidth;
+			set => SetCanvasSize(width: value);
+		}
+		private int canvasHeight;
+		internal int CanvasHeight
+		{
+			get => canvasHeight;
+			set => SetCanvasSize(height: value);
+		}
+		internal float fov;
+		internal float viewportWidth;
+		internal float viewportHeight;
+		internal float projectionPlaneZ;
+		internal Plane[] clippingPlanes;
 		
-		public bool fillTriangles = false;
-		public bool useBackfaceCulling = true;
+		internal bool fillTriangles = false;
+		internal bool useBackfaceCulling = true;
 		
-		public Renderer(int canvasWidth, int canvasHeight, int viewportWidth=1, int viewportHeight=1, float projectionPlaneZ=1)
+		
+		private void SetCanvasSize(int? width=null, int? height=null)
+		{
+			canvasWidth = width ?? canvasWidth;
+			canvasHeight = height ?? canvasHeight;
+			
+			float aspectRatio = (float)canvasHeight/(float)canvasWidth;
+			viewportWidth = MathF.Tan((fov/2)*(MathF.PI/180))*projectionPlaneZ;
+			viewportHeight = aspectRatio;
+		}
+		
+		internal Renderer(int canvasWidth, int canvasHeight, float fov, float projectionPlaneZ=1)
 		{
 			this.canvasWidth = canvasWidth;
 			this.canvasHeight = canvasHeight;
-			this.viewportWidth = viewportWidth;
-			this.viewportHeight = viewportHeight;
+			this.fov = fov;
+			float aspectRatio = (float)canvasHeight/(float)canvasWidth;
+			viewportWidth = MathF.Tan((fov/2)*(MathF.PI/180))*projectionPlaneZ;
+			viewportHeight = aspectRatio;
 			this.projectionPlaneZ = projectionPlaneZ;
 			this.clippingPlanes = new Plane[]{new Plane(new Vector( 0, 0, 1, 0), -projectionPlaneZ),	// near
 											  new Plane(new Vector( 1, 0, 1, 0), 0),		// left
@@ -30,7 +54,7 @@ namespace Engine
 											  new Plane(new Vector( 0,-1, 1, 0), 0)};		// top
 		}
 		
-		public void RenderScene(Scene scene, ref Canvas canvas)
+		internal void RenderScene(Scene scene, ref Canvas canvas)
 		{
 			Matrix cameraMatrix = scene.camera.Orientation.Transposed() * Methods.MakeTranslationMatrix(-1 * scene.camera.position);
 			
@@ -38,7 +62,7 @@ namespace Engine
 			{
 				Matrix transform = cameraMatrix * o.Transform;
 				
-				Model? clipped = TransformAndClip(clippingPlanes, o.model, o.scale, transform);
+				Model? clipped = TransformAndClip(o.model, o.scale, transform);
 				if (clipped != null)
 				{
 					RenderModel(clipped, canvas);
@@ -46,7 +70,7 @@ namespace Engine
 			}
 		}
 		
-		public void RenderModel(Model model, Canvas canvas)
+		internal void RenderModel(Model model, Canvas canvas)
 		{
 			Point[] projected = new Point[model.vertices.Length];
 			for (int i = 0; i < projected.Length; i++)
@@ -78,7 +102,7 @@ namespace Engine
 			
 		}
 		
-		public bool BackfaceCullTriangle(Triangle t, Vector[] vertices)
+		private static bool BackfaceCullTriangle(Triangle t, Vector[] vertices)
 		{
 			// N = (B - A) x (C - A)
 			Vector triangleNormal = Vector.Cross(vertices[t.v1] - vertices[t.v0], vertices[t.v2] - vertices[t.v0]);
@@ -89,7 +113,7 @@ namespace Engine
 			return Vector.Dot(triangleToCamera, triangleNormal) <= 0;
 		}
 		
-		public void RenderTriangle(Triangle t, Point[] projected, Canvas canvas)
+		private void RenderTriangle(Triangle t, Point[] projected, Canvas canvas)
 		{
 			if (fillTriangles)
 			{
@@ -101,7 +125,7 @@ namespace Engine
 			}
 		}
 		
-		public Point ProjectVertex(Vector v)
+		private Point ProjectVertex(Vector v)
 		{
 			float x;
 			float y;
@@ -124,14 +148,14 @@ namespace Engine
 			return new Point(x, y, v.z);
 		}
 		
-		public static Model? TransformAndClip(Plane[] planes, Model model, float scale, Matrix transform)
+		private Model? TransformAndClip(Model model, float scale, Matrix transform)
 		{
 			Vector center = transform * model.boundsCenter;
 			float radius = scale * model.boundsRadius;
 			
 			int tmp = 0;
 			
-			foreach (Plane p in planes)
+			foreach (Plane p in clippingPlanes)
 			{
 				float d = p.SignedDistance(center);
 				if (d < -radius)
@@ -150,14 +174,14 @@ namespace Engine
 				vertices.Add(transform * v);
 			}
 			
-			if (tmp == planes.Length)
+			if (tmp == clippingPlanes.Length)
 			{
 				return new Model(vertices.ToArray(), model.triangles, model.boundsRadius);
 			}
 			
 			
 			Triangle[] triangles = model.triangles;
-			foreach (Plane p in planes)
+			foreach (Plane p in clippingPlanes)
 			{
 				List<Triangle> clippedTriangels = new();
 				foreach (Triangle t in triangles)
@@ -170,7 +194,7 @@ namespace Engine
 			return new Model(vertices.ToArray(), triangles, model.boundsRadius);
 		}
 		
-		public static void ClipTriangle(Triangle triangle, Plane plane, ref List<Triangle> clippedTriangles, ref List<Vector> vertices)
+		private static void ClipTriangle(Triangle triangle, Plane plane, ref List<Triangle> clippedTriangles, ref List<Vector> vertices)
 		{
 			float d0 = plane.SignedDistance(vertices[triangle.v0]);
 			float d1 = plane.SignedDistance(vertices[triangle.v1]);

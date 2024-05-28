@@ -7,7 +7,7 @@ namespace Engine
 	/// <summary>
 	/// A canvas that handles drawing lines and triangles, with a depth buffer
 	/// </summary>
-	class Canvas
+	internal class Canvas
 	{
 		public Image screen;
 		float[,] depthBuffer;
@@ -52,14 +52,14 @@ namespace Engine
 			screen.SetPixel((uint)screen_x, (uint)screen_y, color);
 		}
 		
-		public void DrawWireTriangle(Point p0, Point p1, Point p2, Color color)
+		internal void DrawWireTriangle(Point p0, Point p1, Point p2, Color color)
 		{	
 			DrawLine(p0, p1, color);
 			DrawLine(p1, p2, color);
 			DrawLine(p2, p0, color);
 		}
 		
-		public void DrawFilledTriangle(Point p0, Point p1, Point p2, Color color)
+		internal void DrawFilledTriangle(Point p0, Point p1, Point p2, Color color)
 		{	
 			// sort the points so that y0 <= y1 <= y2
 			if (p1.y < p0.y)
@@ -132,7 +132,7 @@ namespace Engine
 			}
 		}
 		
-		public void DrawLine(Point p0, Point p1, Color color)
+		internal void DrawLine(Point p0, Point p1, Color color)
 		{
 			float dx = p1.x - p0.x;
 			float dy = p1.y - p0.y;
@@ -165,7 +165,7 @@ namespace Engine
 			}
 		}
 		
-		static float[] Interpolate(float i0, float d0, float i1, float d1)
+		private static float[] Interpolate(float i0, float d0, float i1, float d1)
 		{
 			if (i0 == i1)
 			{

@@ -1003,11 +1003,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\frej.lindelof\\Documents\\3D Graphics\\sfml-renderer\\sfml-renderer.csproj",
-      "projectName": "sfml-renderer",
-      "projectPath": "C:\\Users\\frej.lindelof\\Documents\\3D Graphics\\sfml-renderer\\sfml-renderer.csproj",
+      "projectUniqueName": "c:\\Users\\frej.lindelof\\documents\\3d graphics\\Engine\\Engine.csproj",
+      "projectName": "Engine",
+      "projectPath": "c:\\Users\\frej.lindelof\\documents\\3d graphics\\Engine\\Engine.csproj",
       "packagesPath": "C:\\Users\\frej.lindelof\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\frej.lindelof\\Documents\\3D Graphics\\sfml-renderer\\obj\\",
+      "outputPath": "c:\\Users\\frej.lindelof\\documents\\3d graphics\\Engine\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

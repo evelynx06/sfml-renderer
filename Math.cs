@@ -1,3 +1,5 @@
+using SFML.Graphics;
+
 namespace Engine
 {
 	namespace Math
@@ -5,7 +7,7 @@ namespace Engine
 		/// <summary>
 		/// A 4x4 matrix
 		/// </summary>
-		class Matrix
+		public class Matrix
 		{
 			public float m11;
 			public float m12;
@@ -188,7 +190,7 @@ namespace Engine
 		/// <summary>
 		/// A point (or a vector) in 3D space, expressed in homogenous coordinates (w=1 for point, w=0 for vector)
 		/// </summary>
-		class Vector
+		public class Vector
 		{
 			public float x;
 			public float y;
@@ -326,7 +328,7 @@ namespace Engine
 		/// <summary>
 		/// A plane in 3D space, defined by a normal vector (automatically normalised) and a distance from the origin.
 		/// </summary>
-		class Plane
+		internal class Plane
 		{
 			public Vector normal;
 			public float distance;
@@ -361,7 +363,7 @@ namespace Engine
 		/// <summary>
 		/// A point to be drawn on the screen.
 		/// </summary>
-		class Point
+		internal class Point
 		{
 			public float x;
 			public float y;
@@ -377,6 +379,25 @@ namespace Engine
 			public override string ToString()
 			{
 				return $"[{x}; {y}; {z}]";
+			}
+		}
+		
+		/// <summary>
+		/// A triangle containing the indexes of its vertices and a color value.
+		/// </summary>
+		public class Triangle
+		{
+			public int v0;
+			public int v1;
+			public int v2;
+			public Color color;
+			
+			public Triangle(int v0, int v1, int v2, Color color)
+			{
+				this.v0 = v0;
+				this.v1 = v1;
+				this.v2 = v2;
+				this.color = color;
 			}
 		}
 	}

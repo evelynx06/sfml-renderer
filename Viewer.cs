@@ -1,35 +1,76 @@
 ﻿using SFML.Window;
 using SFML.Graphics;
-using Engine.Objects;
-using Engine.Math;
 using SFML.System;
 
 namespace Engine
 {
-	class Viewer
+	public class Viewer
 	{
-		static Renderer renderer = default!;
-		static Scene scene = default!;
-		static float deltaTime;
+		private Renderer renderer = default!;
+		private Dictionary<string, Scene> scenes = default!;
+		private float deltaTime;
 		
-		static void Main()
+		public Scene activeScene;
+		public int WindowWidth { get => renderer.CanvasWidth; }
+		public int WindowHeight { get => renderer.CanvasHeight; }
+		
+		public Viewer(int windowWidth, int windowHeight, float fov, Scene mainScene)
+		{	
+			renderer = new(windowWidth, windowHeight, fov, 1);
+			// AddScene(mainScene);
+			activeScene = mainScene;
+		}
+		
+		public void AddScene(Scene scene)
 		{
-			uint width = 1200;
-			uint height = 600;
-			RenderWindow window = new(new VideoMode(width, height), "Test Window", Styles.Close);
+			scenes.Add(scene.name, scene);
+		}
+		
+		public void ChangeToScene(string sceneName)
+		{
+			if (scenes.ContainsKey(sceneName))
+			{
+				activeScene = scenes[sceneName];
+			}
+			else
+			{
+				throw new ArgumentException($"Could not find scene '{sceneName}'!");
+			}
+		}
+		
+		public void ChangeToScene(Scene scene)
+		{
+			if (scenes.ContainsKey(scene.name))
+			{
+				activeScene = scenes[scene.name];
+			}
+			else
+			{
+				throw new ArgumentException($"Could not find scene '{scene.name}'!");
+			}
+		}
+		
+		public void Run(string title="Window")
+		{
+			uint width = (uint)WindowWidth;
+			uint height = (uint)WindowHeight;
+			RenderWindow window = new(new VideoMode(width, height), title, Styles.Close);
+			
 			window.Closed += new EventHandler(OnClose);
 			window.KeyPressed += new EventHandler<KeyEventArgs>(OnKeyPressed);
+			window.Resized += new EventHandler<SizeEventArgs>(OnResize);
 			
 			Texture canvasTexture = new(width, height);
 			Sprite canvasSprite = new(canvasTexture);
-			renderer = new((int)width, (int)height, 2, 1, 1);
 			
-			scene = InitializeScene();
+			
+			
 			
 			Clock clock = new();
-			
 			int frames = 0;
 			float dtTotal = 0;
+			
+			activeScene.Init();	// user defined
 			
 			while (window.IsOpen)
 			{
@@ -38,89 +79,28 @@ namespace Engine
 				
 				dtTotal += deltaTime;
 				frames++;
-				
-				if (dtTotal > 1)
+					
+				if (dtTotal > 1)	// once every second print the average fps
 				{
 					Console.Write("\rFPS: " + (frames/dtTotal).ToString("0.0") + "   ");
 					dtTotal = 0;
 					frames = 0;
 				}
 				
-				
 				window.DispatchEvents();	// event handling
-				Movements(scene);
-				Canvas canvas = new(width, height);
-				renderer.RenderScene(scene, ref canvas);
 				
-				canvasTexture.Update(canvas.screen);
+				activeScene.Update(deltaTime);	// user defined
+				
+				Canvas canvas = new(width, height);
+				renderer.RenderScene(activeScene, ref canvas);	// render scene
+				
+				canvasTexture.Update(canvas.screen);	// update display
 				window.Draw(canvasSprite);
-				window.Display();	// update display
+				window.Display();
 			}
 		}
 		
-		static void Movements(Scene scene)
-		{
-			if (Keyboard.IsKeyPressed(Keyboard.Key.Left))
-			{
-				scene.RotateCam('y', -45*deltaTime);
-			}
-			if (Keyboard.IsKeyPressed(Keyboard.Key.Right))
-			{
-				scene.RotateCam('y', 45*deltaTime);
-			}
-			if (Keyboard.IsKeyPressed(Keyboard.Key.Up))
-			{
-				scene.RotateCam('x', -45*deltaTime);
-			}
-			if (Keyboard.IsKeyPressed(Keyboard.Key.Down))
-			{
-				scene.RotateCam('x', 45*deltaTime);
-			}
-			
-			if (Keyboard.IsKeyPressed(Keyboard.Key.W))		// positive z: forward
-			{
-				scene.TranslateCam(new Vector(0, 0, 4*deltaTime, 0));
-			}
-			if (Keyboard.IsKeyPressed(Keyboard.Key.S))		// negative z: backward
-			{
-				scene.TranslateCam(new Vector(0, 0, -4*deltaTime, 0));
-			}
-			if (Keyboard.IsKeyPressed(Keyboard.Key.D))		// positive x: right
-			{
-				scene.TranslateCam(new Vector(4*deltaTime, 0, 0, 0));
-			}
-			if (Keyboard.IsKeyPressed(Keyboard.Key.A))		// negative x: left
-			{
-				scene.TranslateCam(new Vector(-4*deltaTime, 0, 0, 0));
-			}
-			if (Keyboard.IsKeyPressed(Keyboard.Key.Space))	// positive y: up
-			{
-				scene.TranslateCam(new Vector(0, 4*deltaTime, 0, 0));
-			}
-			if (Keyboard.IsKeyPressed(Keyboard.Key.LShift))	// negative y: down
-			{
-				scene.TranslateCam(new Vector(0, -4*deltaTime, 0, 0));
-			}
-		}
-		
-		static Scene InitializeScene()
-		{
-			Vector[] cubeVertices = new Vector[] {new(-1, -1, -1, 1), new(1, -1, -1, 1), new(-1, 1, -1, 1), new(1, 1, -1, 1),
-												  new(-1, -1, 1, 1), new(1, -1, 1, 1), new(-1, 1, 1, 1), new(1, 1, 1, 1)};
-			Triangle[] cubeTriangles = new Triangle[] {new(0, 2, 1, Color.Red), new(2, 3, 1, Color.Red), new(1, 3, 5, Color.Green), new(3, 7, 5, Color.Green),
-													   new(2, 6, 3, Color.Blue), new(3, 6, 7, Color.Blue), new(4, 5, 7, Color.Magenta), new(4, 7, 6, Color.Magenta),
-													   new(0, 4, 2, Color.Yellow), new(2, 4, 6, Color.Yellow), new(0, 1, 4, Color.Cyan), new(1, 5, 4, Color.Cyan)};
-			Model cube = new(cubeVertices, cubeTriangles);
-			
-			
-			Instance[] objects = new Instance[] {new(cube, new(-1.5f, 0f, 7f, 1f), 0, 0, 0, 0.75f),
-												 new(cube, new(1.25f, 2.5f, 7.5f, 1f), 0, -195) };
-												//  new(cube, new(0f, 0f, -10f, 1f), 0, -195)};
-			Camera camera = new(new Vector(-3f, 1f, 2f, 1f), 0, 30);
-			return new Scene(camera, objects);
-		}
-		
-		static void OnClose(object? sender, EventArgs e)
+		private void OnClose(object? sender, EventArgs e)
 		{
 			if (sender != null)
 			{
@@ -129,7 +109,7 @@ namespace Engine
 			}
 		}
 		
-		static void OnKeyPressed(object? sender, KeyEventArgs e)
+		private void OnKeyPressed(object? sender, KeyEventArgs e)
 		{
 			switch (e.Code)
 			{
@@ -142,6 +122,12 @@ namespace Engine
 					Console.WriteLine($"\nuseBackfaceCulling: {renderer.useBackfaceCulling}");
 					break;
 			}
+		}
+		
+		private void OnResize(object? sender, SizeEventArgs e)
+		{
+			renderer.CanvasHeight = (int)e.Height;
+			renderer.CanvasWidth = (int)e.Width;
 		}
 	}
 }

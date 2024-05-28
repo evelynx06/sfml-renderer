@@ -1,11 +1,10 @@
 using Engine.Math;
-using SFML.Graphics;
 
 namespace Engine
 {
 	namespace Objects
 	{
-		static class Methods
+		internal static class Methods
 		{
 			/// <param name="degrees">The rotation angle to generate a transformation matrix for.</param>
 			/// <returns>Transformation matrix for a specified rotation around the X axis.</returns>
@@ -65,44 +64,9 @@ namespace Engine
 		}
 		
 		/// <summary>
-		/// A scene containing a camera and all objects to be rendered in the scene.
-		/// </summary>
-		class Scene
-		{
-			public Camera camera;
-			public Instance[] objects;
-			
-			public Scene(Camera camera, Instance[] objects)
-			{
-				this.camera = camera;
-				this.objects = objects;
-			}
-
-			public void TranslateCam(Vector vector)
-			{
-				camera.position += camera.yOrientation * vector;
-			}
-			
-			public void RotateCam(char axis, float degrees)
-			{
-				switch (axis)
-				{
-					case 'x':
-						camera.xOrientation *= Methods.MakeOXRotationMatrix(degrees);
-						break;
-					case 'y':
-						camera.yOrientation *= Methods.MakeOYRotationMatrix(degrees);
-						break;
-					default:
-						throw new ArgumentException($"Invalid/unsupported rotation axis {axis}");
-				}
-			}
-		}
-		
-		/// <summary>
 		/// A specific instance of a model, with its own position, orientation and scale.
 		/// </summary>
-		class Instance
+		public class Instance
 		{
 			public Model model;
 			public Vector position;
@@ -126,7 +90,7 @@ namespace Engine
 		/// <summary>
 		/// A collection of vertices connected by triangles.
 		/// </summary>
-		class Model
+		public class Model
 		{
 			public Vector[] vertices;
 			public Triangle[] triangles;
@@ -173,7 +137,7 @@ namespace Engine
 		/// <summary>
 		/// A point of view with a position and orientation from which to view a scene.
 		/// </summary>
-		class Camera
+		public class Camera
 		{
 			public Vector position;
 			public Matrix xOrientation;
@@ -190,24 +154,25 @@ namespace Engine
 				this.xOrientation = Methods.MakeOXRotationMatrix(xRotation);
 				this.yOrientation = Methods.MakeOYRotationMatrix(yRotation);
 			}
-		}
-		
-		/// <summary>
-		/// A triangle containing the indexes of its vertices and a color value.
-		/// </summary>
-		class Triangle
-		{
-			public int v0;
-			public int v1;
-			public int v2;
-			public Color color;
 			
-			public Triangle(int v0, int v1, int v2, Color color)
+			public void Translate(Vector vector)
 			{
-				this.v0 = v0;
-				this.v1 = v1;
-				this.v2 = v2;
-				this.color = color;
+				position += yOrientation * vector;
+			}
+			
+			public void Rotate(char axis, float degrees)
+			{
+				switch (axis)
+				{
+					case 'x':
+						xOrientation *= Methods.MakeOXRotationMatrix(degrees);
+						break;
+					case 'y':
+						yOrientation *= Methods.MakeOYRotationMatrix(degrees);
+						break;
+					default:
+						throw new ArgumentException($"Invalid/unsupported rotation axis {axis}");
+				}
 			}
 		}
 	}
