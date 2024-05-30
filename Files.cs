@@ -37,11 +37,11 @@ namespace Engine
 		
 		private static void ReadMtlFile(string path, ref List<Dictionary<string, string[]>> materials)
 		{
-			Console.WriteLine(path);
 			if (!File.Exists(path))
 			{
 				throw new FileNotFoundException();
 			}
+			Console.WriteLine($"Reading file '{path}'");
 			
 			string pathToDir = Regex.Match(path, @".*[\\/]").ToString();
 			using StreamReader sr = new(path);
@@ -66,7 +66,7 @@ namespace Engine
 							materialValues = new();
 						}
 						materialValues.Add("name", new[] { values[1] });
-						Console.WriteLine("mtlname: " + values[1]);
+						Console.WriteLine($"Found material '{values[1]}'");
 						break;
 					case "Ka":
 						materialValues.Add("Ka", new[] { values[1], values[2], values[3] });
@@ -83,7 +83,7 @@ namespace Engine
 						materialValues.Add("map_Kd", new[] { IsFullPath(map_KdPath) ? map_KdPath : Path.Combine(pathToDir, map_KdPath) });
 						break;
 					default:
-						Console.WriteLine("Unsupported .mtl syntax '{0}'", values[0]);
+						// Console.WriteLine("Unsupported .mtl syntax '{0}'", values[0]);
 						break;
 				}
 			}
@@ -94,19 +94,17 @@ namespace Engine
 		public static Model[] ReadObjFile(string path)
 		{
 			string fullPath = Path.GetFullPath(path);
-			Console.WriteLine(fullPath);
 			if (!File.Exists(fullPath))
 			{
 				throw new FileNotFoundException();
 			}
+			Console.WriteLine($"Reading file '{fullPath}'");
 			
 			List<Dictionary<string, string[]>> materials = new();
 			List<string[]> vertices = new();
 			List<string[]> vertexTextureCoordinates = new();
 			List<string[]> vertexNormals = new();
 			List<string[]> faces = new();
-			
-			Console.WriteLine("Parsing .obj file...");
 			
 			using (StreamReader sr = new(fullPath))
 			{
@@ -136,6 +134,7 @@ namespace Engine
 							vertexTextureCoordinates.Add(new string[] {"new", values[1]});
 							vertexNormals.Add(new string[] {"new", values[1]});
 							faces.Add(new string[] {"new", values[1]});
+							Console.WriteLine($"Found object '{values[1]}'");
 							break;
 						case "v":
 							vertices.Add(values.Skip(1).ToArray());
@@ -150,7 +149,7 @@ namespace Engine
 							faces.Add(values.Skip(1).ToArray());
 							break;
 						default:
-							Console.WriteLine("Unsupported .obj syntax '{0}'", values[0]);
+							// Console.WriteLine($"Unsupported .obj syntax '{values[0]}'");
 							break;
 					}
 				}
@@ -198,7 +197,6 @@ namespace Engine
 				
 			if (vertices[0][0] == "new")
 			{
-				Console.WriteLine("Found object '{0}'", vertices[0][1]);
 				vertices.RemoveAt(0);
 				vertexTextureCoordinates.RemoveAt(0);
 				faces.RemoveAt(0);
@@ -221,7 +219,6 @@ namespace Engine
 				{
 					if (vertices[i][0] == "new")
 					{
-						Console.WriteLine("Found object '{0}'", vertices[0][1]);
 						vertices.RemoveRange(0, i+1);
 						objectsLeft = true;
 						break;
@@ -238,7 +235,6 @@ namespace Engine
 				{
 					if (vertexTextureCoordinates[i][0] == "new")
 					{
-						// Console.WriteLine("Found object '{0}'", vertices[0][1]);
 						vertices.RemoveRange(0, i+1);
 						// objectsLeft = true;
 						break;
@@ -256,7 +252,6 @@ namespace Engine
 				{
 					if (faces[i][0] == "new")
 					{
-						// Console.WriteLine("Found object '{0}'", vertices[0][1]);
 						vertices.RemoveRange(0, i+1);
 						// objectsLeft = true;
 						break;
@@ -330,6 +325,7 @@ namespace Engine
 				objects.Add(model);
 			}
 			
+			Console.WriteLine($"Finished reading file '{Path.GetFileName(path)}'\n");
 			return objects.ToArray();
 		}
 	}

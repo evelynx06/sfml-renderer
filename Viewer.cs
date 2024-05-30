@@ -18,14 +18,12 @@ namespace Engine
 		{	
 			renderer = new(windowWidth, windowHeight, fov, 1);
 			
-			Console.WriteLine(mainScene);
 			AddScene(mainScene);
 			activeScene = mainScene;
 		}
 		
 		public void AddScene(Scene scene)
 		{
-			Console.WriteLine(scene.name);
 			scenes.Add(scene.name, scene);
 		}
 		
