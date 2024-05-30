@@ -1,7 +1,6 @@
 using Engine.Objects;
 using Engine.Math;
 using System.Text.RegularExpressions;
-using SFML.Graphics;
 using EarClipperLib;
 using System.Globalization;
 
@@ -9,13 +8,99 @@ namespace Engine
 {
 	public static class Files
 	{
-		public static Model[] ReadObjFile(string path)
+		private static bool IsFullPath(string path)
 		{
+			// rejects path if it's invalid or isn't rooted
+			if (string.IsNullOrWhiteSpace(path) || path.IndexOfAny(Path.GetInvalidPathChars()) != -1 || !Path.IsPathRooted(path))
+			{
+				return false;
+			}
+			
+			// since IsPathRooted(path) must have returned true to get here, GetPathRoot(path) will not be null
+			string pathRoot = Path.GetPathRoot(path)!;
+			
+			// accepts any root longer than 2 (e.g "X:\", "\\UNC\PATH"), rejects anything shorter (e.g "", "\", "X:"),
+			// BUT "/" is accepted, to support unix file paths
+			if (pathRoot.Length <= 2 && pathRoot != "/")
+			{
+				return false;
+			}
+			
+			if (pathRoot[0] != '\\' || pathRoot[1] != '\\')
+			{
+				return true;	// rooted and not a UNC path
+			}
+			
+			// A UNC server name without a share name (e.g "\\NAME" or "\\NAME\") is invalid
+			return pathRoot.Trim('\\').IndexOf('\\') != -1;
+		}
+		
+		private static void ReadMtlFile(string path, ref List<Dictionary<string, string[]>> materials)
+		{
+			Console.WriteLine(path);
 			if (!File.Exists(path))
 			{
 				throw new FileNotFoundException();
 			}
 			
+			string pathToDir = Regex.Match(path, @".*[\\/]").ToString();
+			using StreamReader sr = new(path);
+			Dictionary<string, string[]> materialValues = new();
+			while (sr.Peek() > 0)
+			{
+				string? line = sr.ReadLine();
+				if (line == null) { continue; }
+
+				string[] values = line.Split(' ');
+
+				switch (values[0])
+				{
+					case "#":
+						break;
+					case "":
+						break;
+					case "newmtl":
+						if (materialValues.Count != 0)
+						{
+							materials.Add(materialValues);
+							materialValues = new();
+						}
+						materialValues.Add("name", new[] { values[1] });
+						Console.WriteLine("mtlname: " + values[1]);
+						break;
+					case "Ka":
+						materialValues.Add("Ka", new[] { values[1], values[2], values[3] });
+						break;
+					case "d":
+						materialValues.Add("d", new[] { values[1] });
+						break;
+					case "map_Ka":
+						string map_KaPath = string.Join(' ', values.Skip(1));
+						materialValues.Add("map_Kd", new[] { IsFullPath(map_KaPath) ? map_KaPath : Path.Combine(pathToDir, map_KaPath) });
+						break;
+					case "map_Kd":
+						string map_KdPath = string.Join(' ', values.Skip(1));
+						materialValues.Add("map_Kd", new[] { IsFullPath(map_KdPath) ? map_KdPath : Path.Combine(pathToDir, map_KdPath) });
+						break;
+					default:
+						Console.WriteLine("Unsupported .mtl syntax '{0}'", values[0]);
+						break;
+				}
+			}
+			
+			materials.Add(materialValues);
+		}
+		
+		public static Model[] ReadObjFile(string path)
+		{
+			string fullPath = Path.GetFullPath(path);
+			Console.WriteLine(fullPath);
+			if (!File.Exists(fullPath))
+			{
+				throw new FileNotFoundException();
+			}
+			
+			List<Dictionary<string, string[]>> materials = new();
 			List<string[]> vertices = new();
 			List<string[]> vertexTextureCoordinates = new();
 			List<string[]> vertexNormals = new();
@@ -23,7 +108,7 @@ namespace Engine
 			
 			Console.WriteLine("Parsing .obj file...");
 			
-			using (StreamReader sr = new(path))
+			using (StreamReader sr = new(fullPath))
 			{
 				while (sr.Peek() >= 0)	// sr.Peek() returns -1 when there are no characters left to read
 				{
@@ -34,6 +119,18 @@ namespace Engine
 					
 					switch (values[0])
 					{
+						case "#":
+							break;
+						case "":
+							break;
+						case "mtllib":
+							string mtlPath = string.Join(' ', values.Skip(1));
+							string pathToDir = Regex.Match(fullPath, @".*[\\/]").ToString();
+							ReadMtlFile(IsFullPath(mtlPath) ? mtlPath : Path.Combine(pathToDir, mtlPath), ref materials);
+							break;
+						case "usemtl":
+							faces.Add(new string[] {"color", values[1]});
+							break;
 						case "o":
 							vertices.Add(new string[] {"new", values[1]});
 							vertexTextureCoordinates.Add(new string[] {"new", values[1]});
@@ -58,6 +155,46 @@ namespace Engine
 					}
 				}
 			}
+			
+			Dictionary<string, SFML.Graphics.Color> colors = new();
+			Dictionary<string, SFML.Graphics.Image> textures = new();
+			
+			CultureInfo format = new("en-US");
+			foreach (Dictionary<string, string[]> material in materials)
+			{
+				byte r = 0xff;
+				byte g = 0xff;
+				byte b = 0xff;
+				byte a = 0xff;
+				
+				if (material.ContainsKey("Ka"))
+				{
+					r = (byte)(Convert.ToSingle(material["Ka"][0], format)*0xff);
+					g = (byte)(Convert.ToSingle(material["Ka"][0], format)*0xff);
+					b = (byte)(Convert.ToSingle(material["Ka"][0], format)*0xff);
+				}
+				else if (material.ContainsKey("Kd"))
+				{
+					r = (byte)(Convert.ToSingle(material["Ka"][0], format)*0xff);
+					g = (byte)(Convert.ToSingle(material["Ka"][0], format)*0xff);
+					b = (byte)(Convert.ToSingle(material["Ka"][0], format)*0xff);
+				}
+				
+				if (material.ContainsKey("d"))
+				{
+					a = (byte)(Convert.ToSingle(material["d"][0], format)*0xff);
+				}
+				
+				if (material.ContainsKey("map_Ka"))
+				{
+					textures.Add(material["name"][0], new SFML.Graphics.Image(material["map_Ka"][0]));
+				}
+				else if (material.ContainsKey("map_Kd"))
+				{
+					textures.Add(material["name"][0], new SFML.Graphics.Image(material["map_Kd"][0]));
+				}
+				colors.Add(material["name"][0], new(r, g, b, a));
+			}
 				
 			if (vertices[0][0] == "new")
 			{
@@ -67,7 +204,8 @@ namespace Engine
 				faces.RemoveAt(0);
 			}
 			
-			Color[] colors = new Color[] {Color.Red, Color.Green, Color.Blue, Color.Magenta, Color.Yellow, Color.Cyan};
+			SFML.Graphics.Color[] basicColors = new SFML.Graphics.Color[] {new(0xff, 0x00, 0x00), new(0x00, 0xff, 0x00), new(0x00, 0x00, 0xff),
+																		   new(0xff, 0x00, 0xff), new(0xff, 0xff, 0x00), new(0x00, 0xff, 0xff)};
 			
 			List<Model> objects = new();
 			
@@ -90,7 +228,6 @@ namespace Engine
 					}
 					else
 					{
-						CultureInfo format = new("en-US");
 						objectVertices.Add(new Vector3(Convert.ToSingle(vertices[i][0], format),
 													  Convert.ToSingle(vertices[i][1], format),
 													  Convert.ToSingle(vertices[i][2], format)));
@@ -108,11 +245,12 @@ namespace Engine
 					}
 					else
 					{
-						CultureInfo format = new("en-US");
 						objectTextureCoordinates.Add(new Vector2(Convert.ToSingle(vertexTextureCoordinates[i][0], format),
 																 Convert.ToSingle(vertexTextureCoordinates[i][1], format)));
 					}
 				}
+				
+				string materialOverride = "";
 				
 				for (int i = 0; i < faces.Count; i++)
 				{
@@ -123,6 +261,10 @@ namespace Engine
 						// objectsLeft = true;
 						break;
 					}
+					else if (faces[i][0] == "color")
+					{
+						materialOverride = faces[i][1];
+					}
 					else
 					{
 						string vPattern = @"^[0-9]*(?=/|$)";
@@ -131,7 +273,7 @@ namespace Engine
 							objectTriangles.Add(new Triangle(Convert.ToInt32(Regex.Match(faces[i][0], vPattern).ToString())-1,
 															 Convert.ToInt32(Regex.Match(faces[i][1], vPattern).ToString())-1,
 															 Convert.ToInt32(Regex.Match(faces[i][2], vPattern).ToString())-1,
-															 colors[i%6]));
+															 materialOverride == "" ? basicColors[i%6] : colors[materialOverride]));
 						}
 						else
 						{
@@ -155,19 +297,19 @@ namespace Engine
 													objectVertices.FindIndex(a => a.x == (float)res[p].X && a.y == (float)res[p].Y && a.z == (float)res[p].Z),
 													objectVertices.FindIndex(a => a.x == (float)res[p+1].X && a.y == (float)res[p+1].Y && a.z == (float)res[p+1].Z),
 													objectVertices.FindIndex(a => a.x == (float)res[p+2].X && a.y == (float)res[p+2].Y && a.z == (float)res[p+2].Z),
-													colors[i%6]));
+													materialOverride == "" ? basicColors[i%6] : colors[materialOverride]));
 							}
 							
 						}
 					}
 				}
 				
-				TextureVertex[] textureVertices = new TextureVertex[objectVertices.Count];
+				Vertex[] textureVertices = new Vertex[objectVertices.Count];
 				if (objectTextureCoordinates.Count == 0)
 				{
 					for (int i = 0; i < textureVertices.Length; i++)
 					{
-						textureVertices[i] = new(objectVertices[i], objectVertices[i].Vector2);
+						textureVertices[i] = new(objectVertices[i], objectVertices[i]);
 					}
 				}
 				else
@@ -178,8 +320,14 @@ namespace Engine
 					}
 				}
 				
+				Model model = new(textureVertices, objectTriangles.ToArray());
 				
-				objects.Add(new Model(textureVertices, objectTriangles.ToArray()));
+				if (materialOverride != "" && textures.ContainsKey(materialOverride))
+				{
+					model.texture = textures[materialOverride];
+				}
+				
+				objects.Add(model);
 			}
 			
 			return objects.ToArray();

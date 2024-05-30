@@ -18,9 +18,11 @@ namespace TestProject
 			
 			// Model cube = new(cubeVertices, cubeTriangles);
 			
-			Model cube = Files.ReadObjFile(@"TestProject\assets\blenderCube.obj")[0];
-			Model thing = Files.ReadObjFile(@"TestProject\assets\thing.obj")[0];
-				
+			Model cube = Files.ReadObjFile(@"TestProject\assets\texturedCube.obj")[0];
+			Model thing = Files.ReadObjFile(@"TestProject\assets\capsule\capsule.obj")[0];
+			
+			// Console.WriteLine(cube)
+			
 			objects = new Instance[] {new(cube, new(-1.5f, 0f, 7f), 0, 0, 0, 0.75f),
 									  new(thing, new(1.25f, 2.5f, 7.5f), 0, -195) };
 									//   new(cube, new(0f, 0f, -10f, 1f), 0, -195)};

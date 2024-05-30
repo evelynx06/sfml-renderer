@@ -1,4 +1,5 @@
 using Engine.Math;
+using SFML.Graphics;
 
 namespace Engine
 {
@@ -92,17 +93,20 @@ namespace Engine
 		/// </summary>
 		public class Model
 		{
-			public TextureVertex[] vertices;
+			public Vertex[] vertices;
 			public Triangle[] triangles;
 			public Vector3 boundsCenter;
 			public float boundsRadius;
 			
-			public Model(TextureVertex[] vertices, Triangle[] triangles, float boundsRadius=0)
+			public Image? texture = null;
+			
+			public Model(Vertex[] vertices, Triangle[] triangles, Image? texture=null, float boundsRadius=0)
 			{
 				this.vertices = vertices;
 				this.triangles = triangles;
-				this.boundsCenter = FindCenter().Vector3;
+				this.boundsCenter = FindCenter();
 				this.boundsRadius = boundsRadius == 0 ? FindBoundingRadius() : boundsRadius;
+				this.texture = texture;
 			}
 			
 			public Vector4 FindCenter()
@@ -111,11 +115,11 @@ namespace Engine
 				float meanY = 0;
 				float meanZ = 0;
 				
-				foreach (TextureVertex vertex in vertices)
+				foreach (Vertex vertex in vertices)
 				{
-					meanX += vertex.position[0];
-					meanY += vertex.position[1];
-					meanZ += vertex.position[2];
+					meanX += vertex.pos[0];
+					meanY += vertex.pos[1];
+					meanZ += vertex.pos[2];
 				}
 				int len = vertices.Length;
 				return new Vector4(meanX/len, meanY/len, meanZ/len, 1);
@@ -124,9 +128,9 @@ namespace Engine
 			public float FindBoundingRadius()
 			{
 				float r = 0;
-				foreach (TextureVertex vertex in vertices)
+				foreach (Vertex vertex in vertices)
 				{
-					float dist = Vector3.Distance(boundsCenter, vertex.position);
+					float dist = Vector3.Distance(boundsCenter, vertex.pos);
 					r = dist > r ? dist : r;
 				}
 				
@@ -173,6 +177,23 @@ namespace Engine
 					default:
 						throw new ArgumentException($"Invalid/unsupported rotation axis {axis}");
 				}
+			}
+		}
+		
+		public class Vertex
+		{
+			public Vector3 pos;
+			public Vector2? tc;
+			
+			public Vertex(Vector3 position, Vector2? textureCoordinate=null)
+			{
+				pos = position;
+				tc = textureCoordinate;
+			}
+			
+			public Vertex InterpolateTo(Vertex dest, float alpha)
+			{
+				return new(pos.InterpolateTo(dest.pos, alpha), tc?.InterpolateTo(dest.tc ?? tc, alpha));
 			}
 		}
 	}
