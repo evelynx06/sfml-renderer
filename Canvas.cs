@@ -52,27 +52,27 @@ namespace Engine
 		// 	screen.SetPixel((uint)screen_x, (uint)screen_y, color);
 		// }
 		
-		private void PutPixel(int x, int y, Color color)
+		private void PutPixel(int x, int y, float z, Color color)
 		{	
 			if (x < 0 || x >= screenWidth || y < 0 || y >= screenHeight)
 			{
 				return;
 			}
-			// else if (z > depthBuffer[screen_x, screen_y])	// the z value passed in is actually 1/z
-			// {
-				// depthBuffer[screen_x, screen_y] = z;
+			else if (1/z > depthBuffer[x, y])
+			{
+				depthBuffer[x, y] = 1/z;
 				screen.SetPixel((uint)x, (uint)y, color);
-			// }
+			}
 		}
 		
-		internal void DrawWireTriangle(Vector2 p0, Vector2 p1, Vector2 p2, Color color)
+		internal void DrawWireTriangle(Vector3 p0, Vector3 p1, Vector3 p2, Color color)
 		{	
 			DrawLine(p0, p1, color);
 			DrawLine(p1, p2, color);
 			DrawLine(p2, p0, color);
 		}
 		
-		internal void DrawLine(Vector2 p0, Vector2 p1, Color color)
+		internal void DrawLine(Vector3 p0, Vector3 p1, Color color)
 		{
 			float dx = p1.x - p0.x;
 			float dy = p1.y - p0.y;
@@ -83,15 +83,20 @@ namespace Engine
 				{
 					(p1, p0) = (p0, p1);
 				}
-
-				// float[] ys = Interpolate(p0.x, p0.y, p1.x, p1.y);
+				
 				float k = dy/dx;
+				
 				int xStart = (int)MathF.Ceiling(p0.x - 0.5f);
 				int xEnd = (int)MathF.Ceiling(p1.x - 0.5f);
-				for (int x = xStart; x < xEnd; x++)
+				
+				float zStep = (p1.z - p0.z) / dx;
+				
+				float z = p0.z;
+				
+				for (int x = xStart; x < xEnd; x++,
+											   z += zStep)
 				{
-					// PutPixel(x, ys[x - (int)p0.x], color);
-					PutPixel(x, (int)(k*(x+0.5f-p0.x)+p0.y), color);
+					PutPixel(x, (int)(k*(x+0.5f-p0.x)+p0.y), z, color);
 				}
 			}
 			else	// line is vertical-ish
@@ -101,118 +106,30 @@ namespace Engine
 					(p1, p0) = (p0, p1);
 				}
 				
-				// float[] xs = Interpolate(p0.y, p0.x, p1.y, p1.x);
+				
 				float k = dx/dy;
+				
 				int yStart = (int)MathF.Ceiling(p0.y - 0.5f);
 				int yEnd = (int)MathF.Ceiling(p1.y - 0.5f);
-				for (int y = yStart; y < yEnd; y++)
+				
+				float zStep = (p1.z - p0.z) / dy;
+				
+				float z = p0.z;
+				
+				for (int y = yStart; y < yEnd; y++,
+											   z += zStep)
 				{
-					// PutPixel(xs[y - (int)p0.y], y, color);
-					PutPixel((int)(k*(y+0.5f-p0.y)+p0.x), y, color);
+					PutPixel((int)(k*(y+0.5f-p0.y)+p0.x), y, z, color);
 				}
 			}
 		}
 		
-		internal void DrawTriangle(Vector2 v0, Vector2 v1, Vector2 v2, Color color, float shade)
+		internal void DrawTriangle(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Color color, float shade)
 		{
 			color.R = (byte)(color.R*shade);
 			color.G = (byte)(color.G*shade);
 			color.B = (byte)(color.B*shade);
-			 
-			// sort the points so that y0 <= y1 <= y2
-			if (v1.y < v0.y) { (v0, v1) = (v1, v0); }
-			if (v2.y < v0.y) { (v0, v2) = (v2, v0); }
-			if (v2.y < v1.y) { (v1, v2) = (v2, v1); }
 			
-			if (v0.y == v1.y)	// natural flat top
-			{
-				// sort top points so that x0 <= x1
-				if (v1.x < v0.x) { (v0, v1) = (v1, v0); }
-				DrawFlatTopTriangle(v0, v1, v2, color);
-			}
-			else if (v1.y == v2.y)	// natural flat bottom
-			{
-				// sort bottom points so that x1 <= x2
-				if (v2.x < v1.x) { (v1, v2) = (v2, v1); }
-				DrawFlatBottomTriangle(v0, v1, v2, color);
-			}
-			else	// general triangle
-			{
-				// find splitting vertex
-				float alphaSplit = (v1.y - v0.y) / (v2.y - v0.y);
-				Vector2 vi = v0 + (v2 - v0) * alphaSplit;
-				
-				if (v1.x < vi.x)	// major right
-				{
-					DrawFlatBottomTriangle(v0, v1, vi, color);
-					DrawFlatTopTriangle(v1, vi, v2, color);
-				}
-				else	// major left
-				{
-					DrawFlatBottomTriangle(v0, vi, v1, color);
-					DrawFlatTopTriangle(vi, v1, v2, color);
-				}
-			}
-		}
-		
-		private void DrawFlatTopTriangle(Vector2 v0, Vector2 v1, Vector2 v2, Color color)
-		{
-			// calculate slopes
-			float m0 = (v2.x - v0.x) / (v2.y - v0.y);
-			float m1 = (v2.x - v1.x) / (v2.y - v1.y);
-			
-			// calculate start and end scanlines
-			int yStart = (int)MathF.Ceiling(v0.y - 0.5f);
-			int yEnd = (int)MathF.Ceiling(v2.y - 0.5f);		// the scanline AFTER the last line is drawn
-			
-			for (int y = yStart; y < yEnd; y++)
-			{
-				// calculate line start and end points (x-coordinates)
-				// add 0.5 to y value because we're calculating based on pixel CENTERS
-				float px0 = m0 * (y + 0.5f - v0.y) + v0.x;
-				float px1 = m1 * (y + 0.5f - v1.y) + v1.x;
-				
-				// calculate start and end pixels
-				int xStart = (int)MathF.Ceiling(px0 - 0.5f);
-				int xEnd = (int)MathF.Ceiling(px1 - 0.5f);	// the pixel AFTER the last pixel drawn
-				
-				for (int x = xStart; x < xEnd; x++)
-				{
-					PutPixel(x, y, color);
-				}
-			}
-		}
-		
-		private void DrawFlatBottomTriangle(Vector2 v0, Vector2 v1, Vector2 v2, Color color)
-		{
-			// calculate slopes
-			float m0 = (v1.x - v0.x) / (v1.y - v0.y);
-			float m1 = (v2.x - v0.x) / (v2.y - v0.y);
-			
-			// calculate start and end scanlines
-			int yStart = (int)MathF.Ceiling(v0.y - 0.5f);
-			int yEnd = (int)MathF.Ceiling(v2.y - 0.5f);		// the scanline AFTER the last line is drawn
-			
-			for (int y = yStart; y < yEnd; y++)
-			{
-				// calculate line start and end points (x-coordinates)
-				// add 0.5 to y value because we're calculating based on pixel CENTERS
-				float px0 = m0 * (y + 0.5f - v0.y) + v0.x;
-				float px1 = m1 * (y + 0.5f - v0.y) + v0.x;
-				
-				// calculate start and end pixels
-				int xStart = (int)MathF.Ceiling(px0 - 0.5f);
-				int xEnd = (int)MathF.Ceiling(px1 - 0.5f);	// the pixel AFTER the last pixel drawn
-				
-				for (int x = xStart; x < xEnd; x++)
-				{
-					PutPixel(x, y, color);
-				}
-			}
-		}
-		
-		internal void DrawTriangleTex(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Image texture, float shade)
-		{
 			// sort the points so that y0 <= y1 <= y2
 			if (v1.pos.y < v0.pos.y) { (v0, v1) = (v1, v0); }
 			if (v2.pos.y < v0.pos.y) { (v0, v2) = (v2, v0); }
@@ -222,13 +139,13 @@ namespace Engine
 			{
 				// sort top points so that x0 <= x1
 				if (v1.pos.x < v0.pos.x) { (v0, v1) = (v1, v0); }
-				DrawFlatTopTriangleTex(v0, v1, v2, texture, shade);
+				DrawFlatTopTriangle(v0, v1, v2, color, shade);
 			}
 			else if (v1.pos.y == v2.pos.y)	// natural flat bottom
 			{
 				// sort bottom points so that x1 <= x2
 				if (v2.pos.x < v1.pos.x) { (v1, v2) = (v2, v1); }
-				DrawFlatBottomTriangleTex(v0, v1, v2, texture, shade);
+				DrawFlatBottomTriangle(v0, v1, v2, color, shade);
 			}
 			else	// general triangle
 			{
@@ -238,18 +155,18 @@ namespace Engine
 				
 				if (v1.pos.x < vi.pos.x)	// major right
 				{
-					DrawFlatBottomTriangleTex(v0, v1, vi, texture, shade);
-					DrawFlatTopTriangleTex(v1, vi, v2, texture, shade);
+					DrawFlatBottomTriangle(v0, v1, vi, color, shade);
+					DrawFlatTopTriangle(v1, vi, v2, color, shade);
 				}
 				else	// major left
 				{
-					DrawFlatBottomTriangleTex(v0, vi, v1, texture, shade);
-					DrawFlatTopTriangleTex(vi, v1, v2, texture, shade);
+					DrawFlatBottomTriangle(v0, vi, v1, color, shade);
+					DrawFlatTopTriangle(vi, v1, v2, color, shade);
 				}
 			}
 		}
 		
-		private void DrawFlatTopTriangleTex(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Image texture, float shade)
+		private void DrawFlatTopTriangle(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Color color, float shade)
 		{
 			// calculate slopes
 			float m0 = (v2.pos.x - v0.pos.x) / (v2.pos.y - v0.pos.y);
@@ -259,26 +176,25 @@ namespace Engine
 			int yStart = (int)MathF.Ceiling(v0.pos.y - 0.5f);
 			int yEnd = (int)MathF.Ceiling(v2.pos.y - 0.5f);		// the scanline AFTER the last line is drawn
 			
-			// init tex coord edges
-			Vector2 tcEdgeL = v0.tc!;
-			Vector2 tcEdgeR = v1.tc!;
-			Vector2 tcBottom = v2.tc!;
 			
-			// calculate tex coord edge unit step
-			Vector2 tcEdgeStepL = (tcBottom - tcEdgeL) / (v2.pos.y - v0.pos.y);
-			Vector2 tcEdgeStepR = (tcBottom - tcEdgeR) / (v2.pos.y - v1.pos.y);
+			// init depth edges
+			float zEdgeL = v0.pos.z;
+			float zEdgeR = v1.pos.z;
+			float zBottom = v2.pos.z;
 			
-			// do tex coord edge prestep
-			tcEdgeL += tcEdgeStepL * (yStart + 0.5f - v1.pos.y);
-			tcEdgeR += tcEdgeStepR * (yStart + 0.5f - v1.pos.y);
 			
-			// init tex width/height and clamp values
-			float texWidth = (float)texture.Size.X;
-			float texHeight = (float)texture.Size.Y;
-			float texClampX = texWidth - 1.0f;
-			float texClampY = texHeight - 1.0f;
+			// calculate depth edge unit step
+			float zEdgeStepL = (zBottom - zEdgeL) / (v2.pos.y - v0.pos.y);
+			float zEdgeStepR = (zBottom - zEdgeR) / (v2.pos.y - v1.pos.y);
 			
-			for (int y = yStart; y < yEnd; y++, tcEdgeL += tcEdgeStepL, tcEdgeR += tcEdgeStepR)
+			
+			// do depth edge prestep
+			zEdgeL += zEdgeStepL * (yStart + 0.5f - v1.pos.y);
+			zEdgeR += zEdgeStepR * (yStart + 0.5f - v1.pos.y);
+			
+			
+			for (int y = yStart; y < yEnd; y++,
+										   zEdgeL += zEdgeStepL, zEdgeR += zEdgeStepR)
 			{
 				// calculate line start and end points (x-coordinates)
 				// add 0.5 to y value because we're calculating based on pixel CENTERS
@@ -289,25 +205,25 @@ namespace Engine
 				int xStart = (int)MathF.Ceiling(px0 - 0.5f);
 				int xEnd = (int)MathF.Ceiling(px1 - 0.5f);	// the pixel AFTER the last pixel drawn
 				
-				// calculate tex coord scanline unit step
-				Vector2 tcScanStep = (tcEdgeR - tcEdgeL) / (px1 - px0);
 				
-				// do tex coord scanline prestep
-				Vector2 tc = tcEdgeL + tcScanStep * (xStart + 0.5f - px0);
+				// calculate depth scanline unit step
+				float zScanStep = (zEdgeR - zEdgeL) / (px1 - px0);
 				
-				for (int x = xStart; x < xEnd; x++, tc += tcScanStep)
+				
+				// do depth scanline prestep
+				float z = zEdgeL + zScanStep * (xStart + 0.5f - px0);
+				
+				
+				for (int x = xStart; x < xEnd; x++,
+											   z += zScanStep)
 				{
-					Color pixelColor = texture.GetPixel((uint)MathF.Min(tc.x*texWidth, texClampX), (uint)MathF.Min(tc.y*texHeight, texClampY));
-					pixelColor.R = (byte)(pixelColor.R * shade);
-					pixelColor.G = (byte)(pixelColor.G * shade);
-					pixelColor.B = (byte)(pixelColor.B * shade);
-					PutPixel(x, y, pixelColor);
+					PutPixel(x, y, z, color);
 				}
 			}
 		}
 		
-		private void DrawFlatBottomTriangleTex(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Image texture, float shade)
-		{
+		private void DrawFlatBottomTriangle(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Color color, float shade)
+		{	
 			// calculate slopes
 			float m0 = (v1.pos.x - v0.pos.x) / (v1.pos.y - v0.pos.y);
 			float m1 = (v2.pos.x - v0.pos.x) / (v2.pos.y - v0.pos.y);
@@ -316,26 +232,25 @@ namespace Engine
 			int yStart = (int)MathF.Ceiling(v0.pos.y - 0.5f);
 			int yEnd = (int)MathF.Ceiling(v2.pos.y - 0.5f);		// the scanline AFTER the last line is drawn
 			
-			// init tex coord edges
-			Vector2 tcEdgeL = v1.tc!;
-			Vector2 tcEdgeR = v2.tc!;
-			Vector2 tcTop = v0.tc!;
 			
-			// calculate tex coord edge unit step
-			Vector2 tcEdgeStepL = (tcTop - tcEdgeL) / (v0.pos.y - v1.pos.y);
-			Vector2 tcEdgeStepR = (tcTop - tcEdgeR) / (v0.pos.y - v2.pos.y);
+			// init depth edges
+			float zEdgeL = v1.pos.z;
+			float zEdgeR = v2.pos.z;
+			float zTop = v0.pos.z;
 			
-			// do tex coord edge prestep
-			tcEdgeL += tcEdgeStepL * (yStart + 0.5f - v2.pos.y);
-			tcEdgeR += tcEdgeStepR * (yStart + 0.5f - v2.pos.y);
 			
-			// init tex width/height and clamp values
-			float texWidth = (float)texture.Size.X;
-			float texHeight = (float)texture.Size.Y;
-			float texClampX = texWidth - 1.0f;
-			float texClampY = texHeight - 1.0f;
+			// calculate depth edge unit step
+			float zEdgeStepL = (zTop - zEdgeL) / (v0.pos.y - v1.pos.y);
+			float zEdgeStepR = (zTop - zEdgeR) / (v0.pos.y - v2.pos.y);
 			
-			for (int y = yStart; y < yEnd; y++, tcEdgeL += tcEdgeStepL, tcEdgeR += tcEdgeStepR)
+			
+			// do depth edge prestep
+			zEdgeL += zEdgeStepL * (yStart + 0.5f - v2.pos.y);
+			zEdgeR += zEdgeStepR * (yStart + 0.5f - v2.pos.y);
+			
+			
+			for (int y = yStart; y < yEnd; y++,
+										   zEdgeL += zEdgeStepL, zEdgeR += zEdgeStepR)
 			{
 				// calculate line start and end points (x-coordinates)
 				// add 0.5 to y value because we're calculating based on pixel CENTERS
@@ -346,19 +261,229 @@ namespace Engine
 				int xStart = (int)MathF.Ceiling(px0 - 0.5f);
 				int xEnd = (int)MathF.Ceiling(px1 - 0.5f);	// the pixel AFTER the last pixel drawn
 				
+				
+				// calculate depth scanline unit step
+				float zScanStep = (zEdgeR - zEdgeL) / (px1 - px0);
+				
+				
+				// do depth scanline prestep
+				float z = zEdgeL + zScanStep * (xStart + 0.5f - px0);
+				
+				
+				for (int x = xStart; x < xEnd; x++,
+											   z += zScanStep)
+				{
+					PutPixel(x, y, z, color);
+				}
+			}
+		}
+		
+		internal void DrawTriangle(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Image texture, float shade)
+		{
+			// sort the points so that y0 <= y1 <= y2
+			if (v1.pos.y < v0.pos.y) { (v0, v1) = (v1, v0); }
+			if (v2.pos.y < v0.pos.y) { (v0, v2) = (v2, v0); }
+			if (v2.pos.y < v1.pos.y) { (v1, v2) = (v2, v1); }
+			
+			if (v0.pos.y == v1.pos.y)	// natural flat top
+			{
+				// sort top points so that x0 <= x1
+				if (v1.pos.x < v0.pos.x) { (v0, v1) = (v1, v0); }
+				DrawFlatTopTriangle(v0, v1, v2, texture, shade);
+			}
+			else if (v1.pos.y == v2.pos.y)	// natural flat bottom
+			{
+				// sort bottom points so that x1 <= x2
+				if (v2.pos.x < v1.pos.x) { (v1, v2) = (v2, v1); }
+				DrawFlatBottomTriangle(v0, v1, v2, texture, shade);
+			}
+			else	// general triangle
+			{
+				// find splitting vertex
+				float alphaSplit = (v1.pos.y - v0.pos.y) / (v2.pos.y - v0.pos.y);
+				Objects.Vertex vi = v0.InterpolateTo(v2, alphaSplit);
+				
+				if (v1.pos.x < vi.pos.x)	// major right
+				{
+					DrawFlatBottomTriangle(v0, v1, vi, texture, shade);
+					DrawFlatTopTriangle(v1, vi, v2, texture, shade);
+				}
+				else	// major left
+				{
+					DrawFlatBottomTriangle(v0, vi, v1, texture, shade);
+					DrawFlatTopTriangle(vi, v1, v2, texture, shade);
+				}
+			}
+		}
+		
+		private void DrawFlatTopTriangle(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Image texture, float shade)
+		{
+			// calculate slopes
+			float m0 = (v2.pos.x - v0.pos.x) / (v2.pos.y - v0.pos.y);
+			float m1 = (v2.pos.x - v1.pos.x) / (v2.pos.y - v1.pos.y);
+			
+			// calculate start and end scanlines
+			int yStart = (int)MathF.Ceiling(v0.pos.y - 0.5f);
+			int yEnd = (int)MathF.Ceiling(v2.pos.y - 0.5f);		// the scanline AFTER the last line is drawn
+			
+			
+			// init tex coord edges
+			Vector2 tcEdgeL = v0.tc!;
+			Vector2 tcEdgeR = v1.tc!;
+			Vector2 tcBottom = v2.tc!;
+			
+			// init depth edges
+			float zEdgeL = v0.pos.z;
+			float zEdgeR = v1.pos.z;
+			float zBottom = v2.pos.z;
+			
+			
+			// calculate tex coord edge unit step
+			Vector2 tcEdgeStepL = (tcBottom - tcEdgeL) / (v2.pos.y - v0.pos.y);
+			Vector2 tcEdgeStepR = (tcBottom - tcEdgeR) / (v2.pos.y - v1.pos.y);
+			
+			// calculate depth edge unit step
+			float zEdgeStepL = (zBottom - zEdgeL) / (v2.pos.y - v0.pos.y);
+			float zEdgeStepR = (zBottom - zEdgeR) / (v2.pos.y - v1.pos.y);
+			
+			
+			// do tex coord edge prestep
+			tcEdgeL += tcEdgeStepL * (yStart + 0.5f - v1.pos.y);
+			tcEdgeR += tcEdgeStepR * (yStart + 0.5f - v1.pos.y);
+			
+			// do depth edge prestep
+			zEdgeL += zEdgeStepL * (yStart + 0.5f - v1.pos.y);
+			zEdgeR += zEdgeStepR * (yStart + 0.5f - v1.pos.y);
+			
+			
+			// init tex width/height and clamp values
+			float texWidth = (float)texture.Size.X;
+			float texHeight = (float)texture.Size.Y;
+			float texClampX = texWidth - 1.0f;
+			float texClampY = texHeight - 1.0f;
+			
+			for (int y = yStart; y < yEnd; y++,
+										   tcEdgeL += tcEdgeStepL, tcEdgeR += tcEdgeStepR,
+										   zEdgeL += zEdgeStepL, zEdgeR += zEdgeStepR)
+			{
+				// calculate line start and end points (x-coordinates)
+				// add 0.5 to y value because we're calculating based on pixel CENTERS
+				float px0 = m0 * (y + 0.5f - v0.pos.y) + v0.pos.x;
+				float px1 = m1 * (y + 0.5f - v1.pos.y) + v1.pos.x;
+				
+				// calculate start and end pixels
+				int xStart = (int)MathF.Ceiling(px0 - 0.5f);
+				int xEnd = (int)MathF.Ceiling(px1 - 0.5f);	// the pixel AFTER the last pixel drawn
+				
+				
 				// calculate tex coord scanline unit step
 				Vector2 tcScanStep = (tcEdgeR - tcEdgeL) / (px1 - px0);
+				
+				// calculate depth scanline unit step
+				float zScanStep = (zEdgeR - zEdgeL) / (px1 - px0);
+				
 				
 				// do tex coord scanline prestep
 				Vector2 tc = tcEdgeL + tcScanStep * (xStart + 0.5f - px0);
 				
-				for (int x = xStart; x < xEnd; x++, tc += tcScanStep)
+				// do depth scanline prestep
+				float z = zEdgeL + zScanStep * (xStart + 0.5f - px0);
+				
+				for (int x = xStart; x < xEnd; x++,
+				                			   tc += tcScanStep,
+											   z += zScanStep)
 				{
 					Color pixelColor = texture.GetPixel((uint)MathF.Min(tc.x*texWidth, texClampX), (uint)MathF.Min(tc.y*texHeight, texClampY));
 					pixelColor.R = (byte)(pixelColor.R * shade);
 					pixelColor.G = (byte)(pixelColor.G * shade);
 					pixelColor.B = (byte)(pixelColor.B * shade);
-					PutPixel(x, y, pixelColor);
+					PutPixel(x, y, z, pixelColor);
+				}
+			}
+		}
+		
+		private void DrawFlatBottomTriangle(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Image texture, float shade)
+		{
+			// calculate slopes
+			float m0 = (v1.pos.x - v0.pos.x) / (v1.pos.y - v0.pos.y);
+			float m1 = (v2.pos.x - v0.pos.x) / (v2.pos.y - v0.pos.y);
+			
+			// calculate start and end scanlines
+			int yStart = (int)MathF.Ceiling(v0.pos.y - 0.5f);
+			int yEnd = (int)MathF.Ceiling(v2.pos.y - 0.5f);		// the scanline AFTER the last line is drawn
+			
+			
+			// init tex coord edges
+			Vector2 tcEdgeL = v1.tc!;
+			Vector2 tcEdgeR = v2.tc!;
+			Vector2 tcTop = v0.tc!;
+			
+			// init depth edges
+			float zEdgeL = v1.pos.z;
+			float zEdgeR = v2.pos.z;
+			float zTop = v0.pos.z;
+			
+			
+			// calculate tex coord edge unit step
+			Vector2 tcEdgeStepL = (tcTop - tcEdgeL) / (v0.pos.y - v1.pos.y);
+			Vector2 tcEdgeStepR = (tcTop - tcEdgeR) / (v0.pos.y - v2.pos.y);
+			
+			// calculate depth edge unit step
+			float zEdgeStepL = (zTop - zEdgeL) / (v0.pos.y - v1.pos.y);
+			float zEdgeStepR = (zTop - zEdgeR) / (v0.pos.y - v2.pos.y);
+			
+			
+			// do tex coord edge prestep
+			tcEdgeL += tcEdgeStepL * (yStart + 0.5f - v2.pos.y);
+			tcEdgeR += tcEdgeStepR * (yStart + 0.5f - v2.pos.y);
+			
+			// do depth edge prestep
+			zEdgeL += zEdgeStepL * (yStart + 0.5f - v2.pos.y);
+			zEdgeR += zEdgeStepR * (yStart + 0.5f - v2.pos.y);
+			
+			
+			// init tex width/height and clamp values
+			float texWidth = (float)texture.Size.X;
+			float texHeight = (float)texture.Size.Y;
+			float texClampX = texWidth - 1.0f;
+			float texClampY = texHeight - 1.0f;
+			
+			for (int y = yStart; y < yEnd; y++,
+										   tcEdgeL += tcEdgeStepL, tcEdgeR += tcEdgeStepR,
+										   zEdgeL += zEdgeStepL, zEdgeR += zEdgeStepR)
+			{
+				// calculate line start and end points (x-coordinates)
+				// add 0.5 to y value because we're calculating based on pixel CENTERS
+				float px0 = m0 * (y + 0.5f - v0.pos.y) + v0.pos.x;
+				float px1 = m1 * (y + 0.5f - v0.pos.y) + v0.pos.x;
+				
+				// calculate start and end pixels
+				int xStart = (int)MathF.Ceiling(px0 - 0.5f);
+				int xEnd = (int)MathF.Ceiling(px1 - 0.5f);	// the pixel AFTER the last pixel drawn
+				
+				
+				// calculate tex coord scanline unit step
+				Vector2 tcScanStep = (tcEdgeR - tcEdgeL) / (px1 - px0);
+				
+				// calculate depth scanline unit step
+				float zScanStep = (zEdgeR - zEdgeL) / (px1 - px0);
+				
+				
+				// do tex coord scanline prestep
+				Vector2 tc = tcEdgeL + tcScanStep * (xStart + 0.5f - px0);
+				
+				// do depth scanline prestep
+				float z = zEdgeL + zScanStep * (xStart + 0.5f - px0);
+				
+				for (int x = xStart; x < xEnd; x++,
+											   tc += tcScanStep,
+											   z += zScanStep)
+				{
+					Color pixelColor = texture.GetPixel((uint)MathF.Min(tc.x*texWidth, texClampX), (uint)MathF.Min(tc.y*texHeight, texClampY));
+					pixelColor.R = (byte)(pixelColor.R * shade);
+					pixelColor.G = (byte)(pixelColor.G * shade);
+					pixelColor.B = (byte)(pixelColor.B * shade);
+					PutPixel(x, y, z, pixelColor);
 				}
 			}
 		}

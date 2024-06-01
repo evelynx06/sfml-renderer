@@ -142,12 +142,14 @@ namespace Engine
 			{
 				if (v0.tc != null && v1.tc != null && v2.tc != null && texture != null)
 				{
-					canvas.DrawTriangleTex(v0, v1, v2, texture, shade);
+					canvas.DrawTriangle(v0, v1, v2, texture, shade);
+					// canvas.DrawWireTriangle(v0.pos, v1.pos, v2.pos, SFML.Graphics.Color.Black);
 					// canvas.DrawWireTriangle(projected[t.v0].pos, projected[t.v1].pos, projected[t.v2].pos, t.color);
 				}
 				else
 				{
-					canvas.DrawTriangle(v0.pos, v1.pos, v2.pos, color, shade);
+					canvas.DrawTriangle(v0, v1, v2, color, shade);
+					// canvas.DrawWireTriangle(v0.pos, v1.pos, v2.pos, SFML.Graphics.Color.Black);
 					// canvas.DrawWireTriangle(projected[t.v0].pos, projected[t.v1].pos, projected[t.v2].pos, t.color);
 				}
 			}
