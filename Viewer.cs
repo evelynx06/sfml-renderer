@@ -119,8 +119,8 @@ namespace Engine
 					Console.WriteLine($"\nfillTriangles: {renderer.fillTriangles}");
 					break;
 				case Keyboard.Key.RShift:
-					renderer.useBackfaceCulling = !renderer.useBackfaceCulling;
-					Console.WriteLine($"\nuseBackfaceCulling: {renderer.useBackfaceCulling}");
+					renderer.useShading = !renderer.useShading;
+					Console.WriteLine($"\nuseShading: {renderer.useShading}");
 					break;
 			}
 		}

@@ -10,7 +10,8 @@ namespace Engine
 	public abstract class Scene
 	{
 		public string name = "DefaultScene";
-		public Camera camera = default!;
+		public Camera camera = Camera.Default;
+		public Vector3 worldLight = new();
 		public Instance[] objects = Array.Empty<Instance>();
 		
 		public virtual void Init() {}

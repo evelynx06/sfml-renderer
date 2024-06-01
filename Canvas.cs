@@ -113,8 +113,12 @@ namespace Engine
 			}
 		}
 		
-		internal void DrawTriangle(Vector2 v0, Vector2 v1, Vector2 v2, Color color)
+		internal void DrawTriangle(Vector2 v0, Vector2 v1, Vector2 v2, Color color, float shade)
 		{
+			color.R = (byte)(color.R*shade);
+			color.G = (byte)(color.G*shade);
+			color.B = (byte)(color.B*shade);
+			 
 			// sort the points so that y0 <= y1 <= y2
 			if (v1.y < v0.y) { (v0, v1) = (v1, v0); }
 			if (v2.y < v0.y) { (v0, v2) = (v2, v0); }
@@ -207,7 +211,7 @@ namespace Engine
 			}
 		}
 		
-		internal void DrawTriangleTex(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Image texture)
+		internal void DrawTriangleTex(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Image texture, float shade)
 		{
 			// sort the points so that y0 <= y1 <= y2
 			if (v1.pos.y < v0.pos.y) { (v0, v1) = (v1, v0); }
@@ -218,13 +222,13 @@ namespace Engine
 			{
 				// sort top points so that x0 <= x1
 				if (v1.pos.x < v0.pos.x) { (v0, v1) = (v1, v0); }
-				DrawFlatTopTriangleTex(v0, v1, v2, texture);
+				DrawFlatTopTriangleTex(v0, v1, v2, texture, shade);
 			}
 			else if (v1.pos.y == v2.pos.y)	// natural flat bottom
 			{
 				// sort bottom points so that x1 <= x2
 				if (v2.pos.x < v1.pos.x) { (v1, v2) = (v2, v1); }
-				DrawFlatBottomTriangleTex(v0, v1, v2, texture);
+				DrawFlatBottomTriangleTex(v0, v1, v2, texture, shade);
 			}
 			else	// general triangle
 			{
@@ -234,18 +238,18 @@ namespace Engine
 				
 				if (v1.pos.x < vi.pos.x)	// major right
 				{
-					DrawFlatBottomTriangleTex(v0, v1, vi, texture);
-					DrawFlatTopTriangleTex(v1, vi, v2, texture);
+					DrawFlatBottomTriangleTex(v0, v1, vi, texture, shade);
+					DrawFlatTopTriangleTex(v1, vi, v2, texture, shade);
 				}
 				else	// major left
 				{
-					DrawFlatBottomTriangleTex(v0, vi, v1, texture);
-					DrawFlatTopTriangleTex(vi, v1, v2, texture);
+					DrawFlatBottomTriangleTex(v0, vi, v1, texture, shade);
+					DrawFlatTopTriangleTex(vi, v1, v2, texture, shade);
 				}
 			}
 		}
 		
-		private void DrawFlatTopTriangleTex(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Image texture)
+		private void DrawFlatTopTriangleTex(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Image texture, float shade)
 		{
 			// calculate slopes
 			float m0 = (v2.pos.x - v0.pos.x) / (v2.pos.y - v0.pos.y);
@@ -293,12 +297,16 @@ namespace Engine
 				
 				for (int x = xStart; x < xEnd; x++, tc += tcScanStep)
 				{
-					PutPixel(x, y, texture.GetPixel((uint)MathF.Min(tc.x*texWidth, texClampX), (uint)MathF.Min(tc.y*texHeight, texClampY)));
+					Color pixelColor = texture.GetPixel((uint)MathF.Min(tc.x*texWidth, texClampX), (uint)MathF.Min(tc.y*texHeight, texClampY));
+					pixelColor.R = (byte)(pixelColor.R * shade);
+					pixelColor.G = (byte)(pixelColor.G * shade);
+					pixelColor.B = (byte)(pixelColor.B * shade);
+					PutPixel(x, y, pixelColor);
 				}
 			}
 		}
 		
-		private void DrawFlatBottomTriangleTex(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Image texture)
+		private void DrawFlatBottomTriangleTex(Objects.Vertex v0, Objects.Vertex v1, Objects.Vertex v2, Image texture, float shade)
 		{
 			// calculate slopes
 			float m0 = (v1.pos.x - v0.pos.x) / (v1.pos.y - v0.pos.y);
@@ -346,7 +354,11 @@ namespace Engine
 				
 				for (int x = xStart; x < xEnd; x++, tc += tcScanStep)
 				{
-					PutPixel(x, y, texture.GetPixel((uint)MathF.Min(tc.x*texWidth, texClampX), (uint)MathF.Min(tc.y*texHeight, texClampY)));
+					Color pixelColor = texture.GetPixel((uint)MathF.Min(tc.x*texWidth, texClampX), (uint)MathF.Min(tc.y*texHeight, texClampY));
+					pixelColor.R = (byte)(pixelColor.R * shade);
+					pixelColor.G = (byte)(pixelColor.G * shade);
+					pixelColor.B = (byte)(pixelColor.B * shade);
+					PutPixel(x, y, pixelColor);
 				}
 			}
 		}

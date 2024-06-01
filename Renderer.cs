@@ -2,6 +2,7 @@ using Engine.Math;
 using Engine.Objects;
 // using SFML.Graphics;
 // using SFML.Graphics;
+// using SFML.Graphics;
 
 namespace Engine
 {
@@ -32,7 +33,7 @@ namespace Engine
 		
 		
 		internal bool fillTriangles = false;
-		internal bool useBackfaceCulling = true;
+		internal bool useShading = true;
 		
 		
 		private void SetCanvasSize(int? width=null, int? height=null)
@@ -70,6 +71,7 @@ namespace Engine
 		internal void RenderScene(Scene scene, ref Canvas canvas)
 		{
 			Matrix cameraMatrix = scene.camera.Orientation.Transposed() * Methods.MakeTranslationMatrix(-1 * scene.camera.position);
+			Vector3 worldLight = scene.worldLight.Normalized(); // (cameraMatrix * new Vector4(scene.worldLight, 1)).Normalized();
 			
 			foreach (Instance o in scene.objects)
 			{
@@ -79,39 +81,44 @@ namespace Engine
 				Model? clipped = TransformAndClip(o.model, o.scale, transform);
 				if (clipped != null)
 				{
-					RenderModel(clipped, canvas);
+					RenderModel(clipped, worldLight, canvas);
 				}
 			}
 		}
 		
-		internal void RenderModel(Model model, Canvas canvas)
+		internal void RenderModel(Model model, Vector3 worldLight, Canvas canvas)
 		{
-			Vertex[] projected = new Vertex[model.vertices.Length];
-			for (int i = 0; i < projected.Length; i++)
-			{
-				projected[i] = ProjectVertex(model.vertices[i]);
-			}
-			if (useBackfaceCulling)
+			Vertex[] verticesCopy = new Vertex[model.vertices.Length];
+			bool[] isProjected = new bool[model.vertices.Length];
+			
+			if (useShading)
 			{
 				foreach (Triangle t in model.triangles)
 				{
 					if (!BackfaceCullTriangle(t, model.vertices))
 					{
-						RenderTriangle(t, projected, canvas, model.texture);
+						Vector3 triangleNormal = Vector3.Cross(model.vertices[t.v1].pos - model.vertices[t.v0].pos, model.vertices[t.v2].pos - model.vertices[t.v0].pos).Normalized();
+						
+						float shade = (Vector3.Dot(worldLight, triangleNormal) + 1) / 2;	// converted to value between 0 and 1
+						
+						if (!isProjected[t.v0]) { verticesCopy[t.v0] = ProjectVertex(model.vertices[t.v0]); isProjected[t.v0] = true; }
+						if (!isProjected[t.v1]) { verticesCopy[t.v1] = ProjectVertex(model.vertices[t.v1]); isProjected[t.v1] = true; }
+						if (!isProjected[t.v2]) { verticesCopy[t.v2] = ProjectVertex(model.vertices[t.v2]); isProjected[t.v2] = true; }
+						RenderTriangle(verticesCopy[t.v0], verticesCopy[t.v1], verticesCopy[t.v2], canvas, t.color, shade, model.texture);
 					}
-					// else{
-					// 	Vector3 triangleNormal = Vector3.Cross(model.vertices[t.v1].position - model.vertices[t.v0].position,
-					// 										   model.vertices[t.v2].position - model.vertices[t.v0].position);
-					// 	canvas.DrawWireTriangle(ProjectVertex(triangleNormal + model.vertices[t.v2].position), projected[t.v2], projected[t.v1], t.color);
-					//  	canvas.DrawWireTriangle(projected[t.v0], projected[t.v1], projected[t.v2], Color.White);
-					// }
 				}
 			}
 			else
 			{
 				foreach (Triangle t in model.triangles)
 				{
-					RenderTriangle(t, projected, canvas, model.texture);
+					if (!BackfaceCullTriangle(t, model.vertices))
+					{	
+						if (!isProjected[t.v0]) { verticesCopy[t.v0] = ProjectVertex(model.vertices[t.v0]); isProjected[t.v0] = true; }
+						if (!isProjected[t.v1]) { verticesCopy[t.v1] = ProjectVertex(model.vertices[t.v1]); isProjected[t.v1] = true; }
+						if (!isProjected[t.v2]) { verticesCopy[t.v2] = ProjectVertex(model.vertices[t.v2]); isProjected[t.v2] = true; }
+						RenderTriangle(verticesCopy[t.v0], verticesCopy[t.v1], verticesCopy[t.v2], canvas, t.color, 1, model.texture);
+					}
 				}
 			}
 			
@@ -120,6 +127,7 @@ namespace Engine
 		private static bool BackfaceCullTriangle(Triangle t, Vertex[] vertices)
 		{
 			// N = (B - A) x (C - A)
+			// doesn't really need to be normalised, even though it's a normal
 			Vector3 triangleNormal = Vector3.Cross(vertices[t.v1].pos - vertices[t.v0].pos, vertices[t.v2].pos - vertices[t.v0].pos);
 			
 			// V = camPos - A	(camPos is [0, 0, 0])
@@ -128,24 +136,24 @@ namespace Engine
 			return Vector3.Dot(triangleToCamera, triangleNormal) <= 0;
 		}
 		
-		private void RenderTriangle(Triangle t, Vertex[] projected, Canvas canvas, SFML.Graphics.Image? texture)
+		private void RenderTriangle(Vertex v0, Vertex v1, Vertex v2, Canvas canvas, SFML.Graphics.Color color, float shade, SFML.Graphics.Image? texture)
 		{
 			if (fillTriangles)
 			{
-				if (projected[t.v0].tc != null && projected[t.v1].tc != null && projected[t.v2].tc != null && texture != null)
+				if (v0.tc != null && v1.tc != null && v2.tc != null && texture != null)
 				{
-					canvas.DrawTriangleTex(projected[t.v0], projected[t.v1], projected[t.v2], texture);
+					canvas.DrawTriangleTex(v0, v1, v2, texture, shade);
 					// canvas.DrawWireTriangle(projected[t.v0].pos, projected[t.v1].pos, projected[t.v2].pos, t.color);
 				}
 				else
 				{
-					canvas.DrawTriangle(projected[t.v0].pos, projected[t.v1].pos, projected[t.v2].pos, t.color);
+					canvas.DrawTriangle(v0.pos, v1.pos, v2.pos, color, shade);
 					// canvas.DrawWireTriangle(projected[t.v0].pos, projected[t.v1].pos, projected[t.v2].pos, t.color);
 				}
 			}
 			else
 			{
-				canvas.DrawWireTriangle(projected[t.v0].pos, projected[t.v1].pos, projected[t.v2].pos, t.color);
+				canvas.DrawWireTriangle(v0.pos, v1.pos, v2.pos, color);
 			}
 		}
 		

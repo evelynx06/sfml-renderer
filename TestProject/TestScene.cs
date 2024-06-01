@@ -18,8 +18,8 @@ namespace TestProject
 			
 			// Model cube = new(cubeVertices, cubeTriangles);
 			
-			Model cube = Files.ReadObjFile(@"TestProject\assets\texturedCube.obj")[0];
-			Model thing = Files.ReadObjFile(@"TestProject\assets\capsule\capsule.obj")[0];
+			Model cube = Files.ReadObjFile(@"TestProject\assets\overhang.obj")[0];
+			Model thing = Files.ReadObjFile(@"TestProject\assets\teddy.obj")[0];
 			
 			// Console.WriteLine(cube)
 			
@@ -27,6 +27,7 @@ namespace TestProject
 									  new(thing, new(1.25f, 2.5f, 7.5f), 0, -195) };
 									//   new(cube, new(0f, 0f, -10f, 1f), 0, -195)};
 			camera = new(new(-3, 2, 1), 0, 30);
+			worldLight = new(0, 0, -1);
 		}
 	
 		public override void Update(float dt)

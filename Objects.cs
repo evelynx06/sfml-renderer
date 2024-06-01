@@ -152,6 +152,11 @@ namespace Engine
 				get { return yOrientation * xOrientation; }
 			}
 			
+			public static Camera Default
+			{
+				get { return new Camera(new Vector3(0, 0, 0)); }
+			}
+			
 			public Camera(Vector3 position, float xRotation=0, float yRotation=0)
 			{
 				this.position = position;
