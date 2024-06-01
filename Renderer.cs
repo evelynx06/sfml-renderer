@@ -22,8 +22,14 @@ namespace Engine
 		internal float fov;
 		internal float viewportWidth;
 		internal float viewportHeight;
-		internal float projectionPlaneZ;
+		internal float zNear;
+		internal float zFar;
 		internal Plane[] clippingPlanes;
+		
+		private Matrix projectionMatrix;
+		private float aspectRatio;
+		private float fovFactor;
+		
 		
 		internal bool fillTriangles = false;
 		internal bool useBackfaceCulling = true;
@@ -33,26 +39,32 @@ namespace Engine
 		{
 			canvasWidth = width ?? canvasWidth;
 			canvasHeight = height ?? canvasHeight;
-			
-			float aspectRatio = (float)canvasHeight/(float)canvasWidth;
-			viewportWidth = MathF.Tan((fov/2)*(MathF.PI/180))*projectionPlaneZ;
-			viewportHeight = aspectRatio;
+			aspectRatio = canvasWidth/canvasHeight;
+			projectionMatrix[0, 0] = aspectRatio*fovFactor;
 		}
 		
-		internal Renderer(int canvasWidth, int canvasHeight, float fov, float projectionPlaneZ=1)
+		internal Renderer(int canvasWidth, int canvasHeight, float fov = 90.0f, float zNear=0.1f, float zFar = 1000.0f)
 		{
 			this.canvasWidth = canvasWidth;
 			this.canvasHeight = canvasHeight;
-			this.fov = fov;
-			float aspectRatio = (float)canvasHeight/(float)canvasWidth;
-			viewportWidth = MathF.Tan((fov/2)*(MathF.PI/180))*projectionPlaneZ;
-			viewportHeight = aspectRatio;
-			this.projectionPlaneZ = projectionPlaneZ;
-			this.clippingPlanes = new Plane[]{new Plane(new Vector3( 0, 0, 1), -projectionPlaneZ),	// near
+			this.fov = fov*(MathF.PI/180);	// convert to radians
+			viewportWidth = 2;
+			viewportHeight = 2;
+			this.zNear = zNear;
+			this.zFar = zFar;
+			this.clippingPlanes = new Plane[]{new Plane(new Vector3( 0, 0, 1), -zNear),	// near
 											  new Plane(new Vector3( 1, 0, 1), 0),		// left
 											  new Plane(new Vector3(-1, 0, 1), 0),		// right
 											  new Plane(new Vector3( 0, 1, 1), 0),		// bottom
 											  new Plane(new Vector3( 0,-1, 1), 0)};		// top
+											  
+			aspectRatio = canvasWidth > canvasHeight ? canvasWidth/canvasHeight : canvasHeight/canvasWidth;
+			fovFactor = 1/MathF.Tan(this.fov/2);
+			
+			projectionMatrix = new(aspectRatio*fovFactor, 0         , 0          , 0                      ,
+								   0                    , -fovFactor, 0         , 0                      ,
+								   0                    , 0         , zFar/(zFar-zNear), -zNear*zFar/(zFar-zNear),
+								   0                    , 0         , 1          , 0                      );
 		}
 		
 		internal void RenderScene(Scene scene, ref Canvas canvas)
@@ -139,25 +151,27 @@ namespace Engine
 		
 		private Vertex ProjectVertex(Vertex v)
 		{
-			float x;
-			float y;
+			Vector4 projected;
 			// perspective projection
 			if (v.pos.z == 0)
 			{
-				x = 0;
-				y = 0;
+				projected = new(0, 0, 0, 1);
 			}
 			else
 			{
-				x = v.pos.x * projectionPlaneZ/v.pos.z;
-				y = v.pos.y * projectionPlaneZ/v.pos.z;
+				// x = v.pos.x * projectionPlaneZ/v.pos.z;
+				// y = v.pos.y * projectionPlaneZ/v.pos.z;
+				projected = projectionMatrix * new Vector4(v.pos, 1);
+				projected /= projected.w;
 			}
 			
+			projected.x += 1.0f;
+			projected.y += 1.0f;
 			// viewport to canvas
-			x = x * canvasWidth/viewportWidth;
-			y = y * canvasHeight/viewportHeight;
+			projected.x *= canvasWidth/2;
+			projected.y *= canvasHeight/2;
 			
-			return new Vertex(new Vector3(x, y, v.pos.z), v.tc);
+			return new Vertex(projected, v.tc);
 		}
 		
 		private Model? TransformAndClip(Model model, float scale, Matrix transform)

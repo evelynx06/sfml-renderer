@@ -23,48 +23,45 @@ namespace Engine
 			screenHeight = (int)height;
 		}
 		
-		private void PutPixel(float x, float y, float z, Color color)
-		{
-			int screen_x = Convert.ToInt32((screenWidth/2) + x);
-			int screen_y = Convert.ToInt32((screenHeight/2) - y - 1);
+		// private void PutPixel(float x, float y, float z, Color color)
+		// {
+		// 	int screen_x = Convert.ToInt32((screenWidth/2) + x);
+		// 	int screen_y = Convert.ToInt32((screenHeight/2) - y - 1);
 			
-			if (screen_x < 0 || screen_x >= screenWidth || screen_y < 0 || screen_y >= screenHeight)
-			{
-				return;
-			}
-			else if (z > depthBuffer[screen_x, screen_y])	// the z value passed in is actually 1/z
-			{
-				depthBuffer[screen_x, screen_y] = z;
-				screen.SetPixel((uint)screen_x, (uint)screen_y, color);
-			}
-		}
+		// 	if (screen_x < 0 || screen_x >= screenWidth || screen_y < 0 || screen_y >= screenHeight)
+		// 	{
+		// 		return;
+		// 	}
+		// 	else if (z > depthBuffer[screen_x, screen_y])	// the z value passed in is actually 1/z
+		// 	{
+		// 		depthBuffer[screen_x, screen_y] = z;
+		// 		screen.SetPixel((uint)screen_x, (uint)screen_y, color);
+		// 	}
+		// }
 		
-		private void PutPixel(float x, float y, Color color)
-		{
-			int screen_x = Convert.ToInt32((screenWidth/2) + x);
-			int screen_y = Convert.ToInt32((screenHeight/2) - y - 1);
+		// private void PutPixel(float x, float y, Color color)
+		// {
+		// 	int screen_x = Convert.ToInt32((screenWidth/2) + x);
+		// 	int screen_y = Convert.ToInt32((screenHeight/2) - y - 1);
 			
-			if (screen_x < 0 || screen_x >= screenWidth || screen_y < 0 || screen_y >= screenHeight)
-			{
-				return;
-			}
+		// 	if (screen_x < 0 || screen_x >= screenWidth || screen_y < 0 || screen_y >= screenHeight)
+		// 	{
+		// 		return;
+		// 	}
 			
-			screen.SetPixel((uint)screen_x, (uint)screen_y, color);
-		}
+		// 	screen.SetPixel((uint)screen_x, (uint)screen_y, color);
+		// }
 		
-		private void PutPixelInt(int x, int y, Color color)
-		{
-			int screen_x = (screenWidth/2) + x;
-			int screen_y = (screenHeight/2) - y;
-			
-			if (screen_x < 0 || screen_x >= screenWidth || screen_y < 0 || screen_y >= screenHeight)
+		private void PutPixel(int x, int y, Color color)
+		{	
+			if (x < 0 || x >= screenWidth || y < 0 || y >= screenHeight)
 			{
 				return;
 			}
 			// else if (z > depthBuffer[screen_x, screen_y])	// the z value passed in is actually 1/z
 			// {
 				// depthBuffer[screen_x, screen_y] = z;
-				screen.SetPixel((uint)screen_x, (uint)screen_y, color);
+				screen.SetPixel((uint)x, (uint)y, color);
 			// }
 		}
 		
@@ -94,7 +91,7 @@ namespace Engine
 				for (int x = xStart; x < xEnd; x++)
 				{
 					// PutPixel(x, ys[x - (int)p0.x], color);
-					PutPixelInt(x, (int)(k*(x+0.5f-p0.x)+p0.y), color);
+					PutPixel(x, (int)(k*(x+0.5f-p0.x)+p0.y), color);
 				}
 			}
 			else	// line is vertical-ish
@@ -111,7 +108,7 @@ namespace Engine
 				for (int y = yStart; y < yEnd; y++)
 				{
 					// PutPixel(xs[y - (int)p0.y], y, color);
-					PutPixelInt((int)(k*(y+0.5f-p0.y)+p0.x), y, color);
+					PutPixel((int)(k*(y+0.5f-p0.y)+p0.x), y, color);
 				}
 			}
 		}
@@ -177,7 +174,7 @@ namespace Engine
 				
 				for (int x = xStart; x < xEnd; x++)
 				{
-					PutPixelInt(x, y, color);
+					PutPixel(x, y, color);
 				}
 			}
 		}
@@ -205,7 +202,7 @@ namespace Engine
 				
 				for (int x = xStart; x < xEnd; x++)
 				{
-					PutPixelInt(x, y, color);
+					PutPixel(x, y, color);
 				}
 			}
 		}
@@ -296,7 +293,7 @@ namespace Engine
 				
 				for (int x = xStart; x < xEnd; x++, tc += tcScanStep)
 				{
-					PutPixelInt(x, y, texture.GetPixel((uint)MathF.Min(tc.x*texWidth, texClampX), (uint)MathF.Min(tc.y*texHeight, texClampY)));
+					PutPixel(x, y, texture.GetPixel((uint)MathF.Min(tc.x*texWidth, texClampX), (uint)MathF.Min(tc.y*texHeight, texClampY)));
 				}
 			}
 		}
@@ -349,7 +346,7 @@ namespace Engine
 				
 				for (int x = xStart; x < xEnd; x++, tc += tcScanStep)
 				{
-					PutPixelInt(x, y, texture.GetPixel((uint)MathF.Min(tc.x*texWidth, texClampX), (uint)MathF.Min(tc.y*texHeight, texClampY)));
+					PutPixel(x, y, texture.GetPixel((uint)MathF.Min(tc.x*texWidth, texClampX), (uint)MathF.Min(tc.y*texHeight, texClampY)));
 				}
 			}
 		}

@@ -31,6 +31,10 @@ namespace TestProject
 	
 		public override void Update(float dt)
 		{
+			if (Keyboard.IsKeyPressed(Keyboard.Key.LSystem))
+			{
+				return;
+			}
 			if (Keyboard.IsKeyPressed(Keyboard.Key.Left))
 			{
 				camera.Rotate('y', -45*dt);

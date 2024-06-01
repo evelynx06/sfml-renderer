@@ -8,7 +8,7 @@ namespace TestProject
 		{
 			Scene testScene = new TestScene { name = "TestScene" };
 			
-			Viewer viewer = new(1280, 720, 90, testScene);
+			Viewer viewer = new(900, 900, 80, testScene);
 			
 			viewer.Run("Test Window");
 		}

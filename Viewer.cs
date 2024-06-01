@@ -16,7 +16,7 @@ namespace Engine
 		
 		public Viewer(int windowWidth, int windowHeight, float fov, Scene mainScene)
 		{	
-			renderer = new(windowWidth, windowHeight, fov, 1);
+			renderer = new(windowWidth, windowHeight, fov);
 			
 			AddScene(mainScene);
 			activeScene = mainScene;
