@@ -9,33 +9,30 @@ namespace TestProject
 	public class TestScene : Scene
 	{
 		public override void Init()
-		{
-			// Vector[] cubeVertices = new Vector[] {new(-1, -1, -1, 1), new(1, -1, -1, 1), new(-1, 1, -1, 1), new(1, 1, -1, 1),
-			// 									  new(-1, -1, 1, 1), new(1, -1, 1, 1), new(-1, 1, 1, 1), new(1, 1, 1, 1)};
-			// Triangle[] cubeTriangles = new Triangle[] {new(0, 2, 1, Color.Red), new(2, 3, 1, Color.Red), new(1, 3, 5, Color.Green), new(3, 7, 5, Color.Green),
-			// 										   new(2, 6, 3, Color.Blue), new(3, 6, 7, Color.Blue), new(4, 5, 7, Color.Magenta), new(4, 7, 6, Color.Magenta),
-			// 										   new(0, 4, 2, Color.Yellow), new(2, 4, 6, Color.Yellow), new(0, 1, 4, Color.Cyan), new(1, 5, 4, Color.Cyan)};
+		{	
+			// Read assets
+			Model cubeModel = Files.ReadObjFile(@"TestProject\assets\blenderCube.obj")[0];
+			Model thingModel = Files.ReadObjFile(@"TestProject\assets\thing.obj")[0];
 			
-			// Model cube = new(cubeVertices, cubeTriangles);
+			// Define objects
+			AddObject(new EngineObject(new Vector3(0f, 0f, 7f), "cube", cubeModel, 0, 0, 0, 0.75f));
+			AddObject(new EngineObject(new Vector3(1.25f, 2.5f, 7.5f), "thing", thingModel, 0, -195));
 			
-			Model cube = Files.ReadObjFile(@"TestProject\assets\overhang.obj")[0];
-			Model thing = Files.ReadObjFile(@"TestProject\assets\teddy.obj")[0];
+			// Attach scripts
+			AttachScript("CubeScript.cs", GetObject("cube"));
 			
-			// Console.WriteLine(cube)
-			
-			objects = new Instance[] {new(cube, new(-1.5f, 0f, 7f), 0, 0, 0, 0.75f),
-									  new(thing, new(1.25f, 2.5f, 7.5f), 0, -195) };
-									//   new(cube, new(0f, 0f, -10f, 1f), 0, -195)};
+			// Define camera and lighting
 			camera = new(new(-3, 2, 1), 0, 30);
 			worldLight = new(0, 0, -1);
 		}
 	
 		public override void Update(float dt)
 		{
-			if (Keyboard.IsKeyPressed(Keyboard.Key.LSystem))
+			if (Keyboard.IsKeyPressed(Keyboard.Key.LSystem))	// don't process my fucking input when i'm trying to take a screenshot
 			{
 				return;
 			}
+			
 			if (Keyboard.IsKeyPressed(Keyboard.Key.Left))
 			{
 				camera.Rotate('y', -45*dt);

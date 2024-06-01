@@ -71,6 +71,9 @@ namespace Engine
 					case "Ka":
 						materialValues.Add("Ka", new[] { values[1], values[2], values[3] });
 						break;
+					case "Kd":
+						materialValues.Add("Kd", new[] { values[1], values[2], values[3] });
+						break;
 					case "d":
 						materialValues.Add("d", new[] { values[1] });
 						break;
@@ -166,17 +169,17 @@ namespace Engine
 				byte b = 0xff;
 				byte a = 0xff;
 				
-				if (material.ContainsKey("Ka"))
+				if (material.ContainsKey("Kd"))
 				{
-					r = (byte)(Convert.ToSingle(material["Ka"][0], format)*0xff);
-					g = (byte)(Convert.ToSingle(material["Ka"][0], format)*0xff);
-					b = (byte)(Convert.ToSingle(material["Ka"][0], format)*0xff);
+					r = (byte)(Convert.ToSingle(material["Kd"][0], format)*0xff);
+					g = (byte)(Convert.ToSingle(material["Kd"][1], format)*0xff);
+					b = (byte)(Convert.ToSingle(material["Kd"][2], format)*0xff);
 				}
-				else if (material.ContainsKey("Kd"))
+				else if (material.ContainsKey("Ka"))
 				{
 					r = (byte)(Convert.ToSingle(material["Ka"][0], format)*0xff);
-					g = (byte)(Convert.ToSingle(material["Ka"][0], format)*0xff);
-					b = (byte)(Convert.ToSingle(material["Ka"][0], format)*0xff);
+					g = (byte)(Convert.ToSingle(material["Ka"][1], format)*0xff);
+					b = (byte)(Convert.ToSingle(material["Ka"][2], format)*0xff);
 				}
 				
 				if (material.ContainsKey("d"))
@@ -276,6 +279,8 @@ namespace Engine
 							
 							foreach (string vertexIndex in faces[i])
 							{
+								if (string.IsNullOrWhiteSpace(vertexIndex)) { continue; }
+								
 								Vector3 vertex = objectVertices[Convert.ToInt32(Regex.Match(vertexIndex, vPattern).ToString())-1];
 								points.Add(new Vector3m(vertex.x, vertex.y, vertex.z));
 							}

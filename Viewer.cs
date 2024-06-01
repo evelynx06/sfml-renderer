@@ -72,6 +72,10 @@ namespace Engine
 			float dtTotal = 0;
 			
 			activeScene.Init();	// user defined
+			foreach (ObjectScript script in activeScene.scripts)
+			{
+				script.Init();
+			}
 			
 			while (window.IsOpen)
 			{
@@ -91,6 +95,10 @@ namespace Engine
 				window.DispatchEvents();	// event handling
 				
 				activeScene.Update(deltaTime);	// user defined
+				foreach (ObjectScript script in activeScene.scripts)
+				{
+					script.Update(deltaTime);
+				}
 				
 				Canvas canvas = new(width, height);
 				renderer.RenderScene(activeScene, ref canvas);	// render scene
@@ -121,6 +129,10 @@ namespace Engine
 				case Keyboard.Key.RShift:
 					renderer.useShading = !renderer.useShading;
 					Console.WriteLine($"\nuseShading: {renderer.useShading}");
+					break;
+				case Keyboard.Key.End:
+					renderer.showGizmo = !renderer.showGizmo;
+					Console.WriteLine($"\nshowGizmo: {renderer.showGizmo}");
 					break;
 			}
 		}

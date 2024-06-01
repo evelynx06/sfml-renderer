@@ -26,6 +26,13 @@ namespace Engine
 			public float m43;
 			public float m44;
 			
+			public static Matrix Identity
+			{
+				get { return new Matrix(1, 0, 0, 0,
+										0, 1, 0, 0,
+										0, 0, 1, 0,
+										0, 0, 0, 1); }
+			}
 			
 			public Matrix()
 			{ }
@@ -171,14 +178,6 @@ namespace Engine
 				}
 				
 				return result;
-			}
-			
-			public static Matrix Identity()
-			{
-				return new Matrix(1, 0, 0, 0,
-								  0, 1, 0, 0,
-								  0, 0, 1, 0,
-								  0, 0, 0, 1);
 			}
 
 			public override string ToString()

@@ -34,6 +34,7 @@ namespace Engine
 		
 		internal bool fillTriangles = false;
 		internal bool useShading = true;
+		internal bool showGizmo = true;
 		
 		
 		private void SetCanvasSize(int? width=null, int? height=null)
@@ -70,19 +71,37 @@ namespace Engine
 		
 		internal void RenderScene(Scene scene, ref Canvas canvas)
 		{
-			Matrix cameraMatrix = scene.camera.Orientation.Transposed() * Methods.MakeTranslationMatrix(-1 * scene.camera.position);
+			Matrix cameraRotationMatrix = scene.camera.GetOrientation.Transposed();
+			Matrix cameraTranslationMatrix = Methods.MakeTranslationMatrix(-1 * scene.camera.position);
+			Matrix cameraMatrix = cameraRotationMatrix * cameraTranslationMatrix;
 			Vector3 worldLight = scene.worldLight.Normalized(); // (cameraMatrix * new Vector4(scene.worldLight, 1)).Normalized();
 			
-			foreach (Instance o in scene.objects)
+			
+			foreach (EngineObject o in scene.objects)
 			{
-				Matrix transform = cameraMatrix * o.Transform;
+				if (o.model == null) {continue;}
 				
+				Matrix transform = cameraMatrix * o.GetTransform;
 				
 				Model? clipped = TransformAndClip(o.model, o.scale, transform);
 				if (clipped != null)
 				{
 					RenderModel(clipped, worldLight, canvas);
 				}
+			}
+			
+			if (showGizmo)
+			{
+				Vector3[] axisGizmo = new Vector3[4];
+				for (int i = 0; i < 4; i++)
+				{
+					axisGizmo[i] = Methods.MakeTranslationMatrix(new(0f, 0f, 3f)) * cameraRotationMatrix * new Vector4(scene.camera.axisGizmo[i], 1);
+					axisGizmo[i] = ProjectVertex(axisGizmo[i]);
+				}
+				
+				canvas.DrawLine(axisGizmo[0], axisGizmo[1], SFML.Graphics.Color.Red);
+				canvas.DrawLine(axisGizmo[0], axisGizmo[2], SFML.Graphics.Color.Green);
+				canvas.DrawLine(axisGizmo[0], axisGizmo[3], SFML.Graphics.Color.Blue);
 			}
 		}
 		
@@ -182,6 +201,31 @@ namespace Engine
 			projected.y *= canvasHeight/2;
 			
 			return new Vertex(projected, v.tc);
+		}
+		
+		private Vector3 ProjectVertex(Vector3 v)
+		{
+			Vector4 projected;
+			// perspective projection
+			if (v.z == 0)
+			{
+				projected = new(0, 0, 0, 1);
+			}
+			else
+			{
+				// x = v.pos.x * projectionPlaneZ/v.pos.z;
+				// y = v.pos.y * projectionPlaneZ/v.pos.z;
+				projected = projectionMatrix * new Vector4(v, 1);
+				projected /= projected.w;
+			}
+			
+			projected.x += 1.0f;
+			projected.y += 1.0f;
+			// viewport to canvas
+			projected.x *= canvasWidth/2;
+			projected.y *= canvasHeight/2;
+			
+			return projected;
 		}
 		
 		private Model? TransformAndClip(Model model, float scale, Matrix transform)

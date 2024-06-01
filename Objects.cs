@@ -9,7 +9,7 @@ namespace Engine
 		{
 			/// <param name="degrees">The rotation angle to generate a transformation matrix for.</param>
 			/// <returns>Transformation matrix for a specified rotation around the X axis.</returns>
-			public static Matrix MakeOXRotationMatrix(float degrees)
+			internal static Matrix MakeOXRotationMatrix(float degrees)
 			{
 				float sin = MathF.Sin(degrees*MathF.PI/180);
 				float cos = MathF.Cos(degrees*MathF.PI/180);
@@ -21,7 +21,7 @@ namespace Engine
 			
 			/// <param name="degrees">The rotation angle to generate a transformation matrix for.</param>
 			/// <returns>Transformation matrix for a specified rotation around the Y axis.</returns>
-			public static Matrix MakeOYRotationMatrix(float degrees)
+			internal static Matrix MakeOYRotationMatrix(float degrees)
 			{
 				float sin = MathF.Sin(degrees*MathF.PI/180);
 				float cos = MathF.Cos(degrees*MathF.PI/180);
@@ -33,7 +33,7 @@ namespace Engine
 			
 			/// <param name="degrees">The rotation angle to generate a transformation matrix for.</param>
 			/// <returns>Transformation matrix for a specified rotation around the Z axis.</returns>
-			public static Matrix MakeOZRotationMatrix(float degrees)
+			internal static Matrix MakeOZRotationMatrix(float degrees)
 			{
 				float sin = MathF.Sin(degrees*MathF.PI/180);
 				float cos = MathF.Cos(degrees*MathF.PI/180);
@@ -45,7 +45,7 @@ namespace Engine
 			
 			/// <param name="translation">The translation vector to generate a transformation matrix for.</param>
 			/// <returns>Transformation matrix for a specified translation.</returns>
-			public static Matrix MakeTranslationMatrix(Vector3 translation)
+			internal static Matrix MakeTranslationMatrix(Vector3 translation)
 			{
 				return new Matrix(1, 0, 0, translation[0],
 								  0, 1, 0, translation[1],
@@ -55,7 +55,7 @@ namespace Engine
 			
 			/// <param name="scale">The scale factor to generate a transformation matrix for.</param>
 			/// <returns>Transformation matrix for a specified scale.</returns>
-			public static Matrix MakeScalingMatrix(float scale)
+			internal static Matrix MakeScalingMatrix(float scale)
 			{
 				return new Matrix(scale, 0    , 0    , 0,
 								  0    , scale, 0    , 0,
@@ -67,24 +67,36 @@ namespace Engine
 		/// <summary>
 		/// A specific instance of a model, with its own position, orientation and scale.
 		/// </summary>
-		public class Instance
+		public class EngineObject
 		{
-			public Model model;
+			public string name;
+			public Model? model;
 			public Vector3 position;
-			public Matrix orientation;
 			public float scale;
+			private Vector3 rotation;
 			
-			public Matrix Transform
+			public Vector3 Rotation
+			{
+				get { return rotation; }
+				set { rotation = value; orientation = Methods.MakeOXRotationMatrix(rotation.x) * Methods.MakeOYRotationMatrix(rotation.y) * Methods.MakeOZRotationMatrix(rotation.z); }
+			}
+			
+			internal Matrix orientation;
+			
+			internal Matrix GetTransform
 			{
 				get { return Methods.MakeTranslationMatrix(position) * (orientation * Methods.MakeScalingMatrix(scale)); }
 			}
 			
-			public Instance(Model model, Vector3 position, float xRotation=0, float yRotation=0, float zRotation=0, float scale=1)
+			public EngineObject(Vector3 position, string name="DefaultObject", Model? model=null, float xRotation=0, float yRotation=0, float zRotation=0, float scale=1)
 			{
+				this.name = name;
 				this.model = model;
 				this.position = position;
-				this.orientation = (xRotation == 0 ? Matrix.Identity() : Methods.MakeOXRotationMatrix(xRotation)) * (yRotation == 0 ? Matrix.Identity() : Methods.MakeOYRotationMatrix(yRotation)) * (zRotation == 0 ? Matrix.Identity() : Methods.MakeOZRotationMatrix(zRotation));
 				this.scale = scale;
+				this.rotation = new Vector3(xRotation, yRotation, zRotation);
+				
+				orientation = (xRotation == 0 ? Matrix.Identity : Methods.MakeOXRotationMatrix(xRotation)) * (yRotation == 0 ? Matrix.Identity : Methods.MakeOYRotationMatrix(yRotation)) * (zRotation == 0 ? Matrix.Identity : Methods.MakeOZRotationMatrix(zRotation));
 			}
 		}
 		
@@ -144,10 +156,17 @@ namespace Engine
 		public class Camera
 		{
 			public Vector3 position;
-			public Matrix xOrientation;
-			public Matrix yOrientation;
+			internal Matrix xOrientation;
+			internal Matrix yOrientation;
 			
-			public Matrix Orientation
+			internal Vector3[] axisGizmo = new Vector3[] {
+				new(0f, 0f, 0f),		// origin
+				new(0.2f, 0f, 0f),		// x axis
+				new(0f, 0.2f, 0f),		// y axis
+				new(0f, 0f, 0.2f)			// z axis
+			};
+			
+			internal Matrix GetOrientation
 			{
 				get { return yOrientation * xOrientation; }
 			}
