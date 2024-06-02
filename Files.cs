@@ -251,6 +251,11 @@ namespace Engine
 				
 				string materialOverride = "";
 				
+				string vPattern = @"^[0-9]*(?=/|$)";
+				string vnPattern = @"(?<=^[0-9]*/)[0-9]*";
+				
+				bool needToCalculateNormals = false;
+				
 				for (int i = 0; i < faces.Count; i++)
 				{
 					if (faces[i][0] == "new")
@@ -265,13 +270,35 @@ namespace Engine
 					}
 					else
 					{
-						string vPattern = @"^[0-9]*(?=/|$)";
+						Vector3 normal = null!;
+						
+						if (vertexNormals.Count > 0)
+						{
+							// average normal vector of vertices
+							try {
+								normal = (objectVertices[Convert.ToInt32(Regex.Match(faces[i][0], vnPattern).ToString())-1] +
+										  objectVertices[Convert.ToInt32(Regex.Match(faces[i][1], vnPattern).ToString())-1] +
+										  objectVertices[Convert.ToInt32(Regex.Match(faces[i][2], vnPattern).ToString())-1])
+										  / 3;
+								normal = normal.Normalized();
+							}
+							catch
+							{
+								needToCalculateNormals = true;
+							}
+						}
+						else
+						{
+							needToCalculateNormals = true;
+						}
+						
 						if (faces[i].Length == 3)
 						{
 							objectTriangles.Add(new Triangle(Convert.ToInt32(Regex.Match(faces[i][0], vPattern).ToString())-1,
 															 Convert.ToInt32(Regex.Match(faces[i][1], vPattern).ToString())-1,
 															 Convert.ToInt32(Regex.Match(faces[i][2], vPattern).ToString())-1,
-															 materialOverride == "" ? basicColors[i%6] : colors[materialOverride]));
+															 materialOverride == "" ? basicColors[i%6] : colors[materialOverride],
+															 normal));
 						}
 						else
 						{
@@ -297,7 +324,8 @@ namespace Engine
 													objectVertices.FindIndex(a => a.x == (float)res[p].X && a.y == (float)res[p].Y && a.z == (float)res[p].Z),
 													objectVertices.FindIndex(a => a.x == (float)res[p+1].X && a.y == (float)res[p+1].Y && a.z == (float)res[p+1].Z),
 													objectVertices.FindIndex(a => a.x == (float)res[p+2].X && a.y == (float)res[p+2].Y && a.z == (float)res[p+2].Z),
-													materialOverride == "" ? basicColors[i%6] : colors[materialOverride]));
+													materialOverride == "" ? basicColors[i%6] : colors[materialOverride],
+													normal));
 							}
 							
 						}
@@ -325,6 +353,14 @@ namespace Engine
 				if (materialOverride != "" && textures.ContainsKey(materialOverride))
 				{
 					model.texture = textures[materialOverride];
+				}
+				
+				if (needToCalculateNormals)
+				{
+					foreach (Triangle t in objectTriangles)
+					{
+						t.normal = Vector3.Cross(objectVertices[t.v1] - objectVertices[t.v0], objectVertices[t.v2] - objectVertices[t.v0]).Normalized();
+					}
 				}
 				
 				objects.Add(model);

@@ -95,7 +95,7 @@ namespace Engine
 				Vector3[] axisGizmo = new Vector3[4];
 				for (int i = 0; i < 4; i++)
 				{
-					axisGizmo[i] = Methods.MakeTranslationMatrix(new(0f, 0f, 3f)) * cameraRotationMatrix * new Vector4(scene.camera.axisGizmo[i], 1);
+					axisGizmo[i] = Methods.MakeTranslationMatrix(new(0f, 0f, 0.8f)) * cameraRotationMatrix * new Vector4(scene.camera.axisGizmo[i], 1);
 					axisGizmo[i] = ProjectVertex(axisGizmo[i]);
 				}
 				
@@ -115,10 +115,8 @@ namespace Engine
 				foreach (Triangle t in model.triangles)
 				{
 					if (!BackfaceCullTriangle(t, model.vertices))
-					{
-						Vector3 triangleNormal = Vector3.Cross(model.vertices[t.v1].pos - model.vertices[t.v0].pos, model.vertices[t.v2].pos - model.vertices[t.v0].pos).Normalized();
-						
-						float shade = (Vector3.Dot(worldLight, triangleNormal) + 1) / 2;	// converted to value between 0 and 1
+					{	
+						float shade = (Vector3.Dot(worldLight, t.normal) + 1) / 2;	// converted to value between 0 and 1
 						
 						if (!isProjected[t.v0]) { verticesCopy[t.v0] = ProjectVertex(model.vertices[t.v0]); isProjected[t.v0] = true; }
 						if (!isProjected[t.v1]) { verticesCopy[t.v1] = ProjectVertex(model.vertices[t.v1]); isProjected[t.v1] = true; }
@@ -144,15 +142,11 @@ namespace Engine
 		}
 		
 		private static bool BackfaceCullTriangle(Triangle t, Vertex[] vertices)
-		{
-			// N = (B - A) x (C - A)
-			// doesn't really need to be normalised, even though it's a normal
-			Vector3 triangleNormal = Vector3.Cross(vertices[t.v1].pos - vertices[t.v0].pos, vertices[t.v2].pos - vertices[t.v0].pos);
-			
+		{	
 			// V = camPos - A	(camPos is [0, 0, 0])
 			Vector3 triangleToCamera = -1 * vertices[t.v2].pos;
 			
-			return Vector3.Dot(triangleToCamera, triangleNormal) <= 0;
+			return Vector3.Dot(triangleToCamera, t.normal) <= 0;
 		}
 		
 		private void RenderTriangle(Vertex v0, Vertex v1, Vertex v2, Canvas canvas, SFML.Graphics.Color color, float shade, SFML.Graphics.Image? texture)
@@ -253,24 +247,27 @@ namespace Engine
 			{
 				vertices.Add(new Vertex(transform * new Vector4(v.pos, 1), v.tc));
 			}
-			
-			// return new Model(vertices.ToArray(), model.triangles, model.texture, model.boundsRadius);
+			List<Triangle> transformedTriangles = new();
+			foreach (Triangle t in model.triangles)
+			{
+				transformedTriangles.Add(new Triangle(t.v0, t.v1, t.v2, t.color, transform * new Vector4(t.normal, 0)));
+			}
 			
 			if (tmp == clippingPlanes.Length)
 			{
-				return new Model(vertices.ToArray(), model.triangles, model.texture, model.boundsRadius);
+				return new Model(vertices.ToArray(), transformedTriangles.ToArray(), model.texture, model.boundsRadius);
 			}
 			
 			
-			Triangle[] triangles = model.triangles;
+			Triangle[] triangles = transformedTriangles.ToArray();
 			foreach (Plane p in clippingPlanes)
 			{
-				List<Triangle> clippedTriangels = new();
+				List<Triangle> clippedTriangles = new();
 				foreach (Triangle t in triangles)
 				{
-					ClipTriangle(t, p, ref clippedTriangels, ref vertices);
+					ClipTriangle(t, p, ref clippedTriangles, ref vertices);
 				}
-				triangles = clippedTriangels.ToArray();
+				triangles = clippedTriangles.ToArray();
 			}
 			
 			return new Model(vertices.ToArray(), triangles, model.texture, model.boundsRadius);
@@ -278,89 +275,131 @@ namespace Engine
 		
 		private static void ClipTriangle(Triangle triangle, Plane plane, ref List<Triangle> clippedTriangles, ref List<Vertex> vertices)
 		{
+			int[] inPoints = new int[3];
+			int[] outPoints = new int[3];
+			int inPointCount = 0;
+			int outPointCount = 0;
+			
 			float d0 = plane.SignedDistance(vertices[triangle.v0].pos);
 			float d1 = plane.SignedDistance(vertices[triangle.v1].pos);
 			float d2 = plane.SignedDistance(vertices[triangle.v2].pos);
 			
-			if (d0 >= 0 && d1 >= 0 && d2 >= 0)
+			
+			if (d0 >= 0) { inPoints[inPointCount++] =  triangle.v0; }
+			else { outPoints[outPointCount++] = triangle.v0; }
+			if (d1 >= 0) { inPoints[inPointCount++] =  triangle.v1; }
+			else { outPoints[outPointCount++] = triangle.v1; }
+			if (d2 >= 0) { inPoints[inPointCount++] =  triangle.v2; }
+			else { outPoints[outPointCount++] = triangle.v2; ; }
+			
+			
+			if (inPointCount == 0)
+			{
+				return;
+			}
+			
+			if (inPointCount == 3)
 			{
 				clippedTriangles.Add(triangle);
 				return;
 			}
-			else if (d0 < 0 && d1 < 0 && d2 < 0)
-			{
-				return;
-			}
-			else if (d0 >= 0 ^ d1 >= 0 ^ d2 >= 0)
-			{
-				// only one vertex is in
-				// A is the vertex that's in
-				// B and C are the other two
-				int a, b, c;
-				if (d0 >= 0)
-				{
-					a = triangle.v0;
-					b = triangle.v1;
-					c = triangle.v2;
-				}
-				else if (d1 >= 0)
-				{
-					a = triangle.v1;
-					b = triangle.v2;
-					c = triangle.v0;
-				}
-				else
-				{
-					a = triangle.v2;
-					b = triangle.v0;
-					c = triangle.v1;
-				}
+			
+			if (inPointCount == 1 && outPointCount == 2)
+			{	
+				vertices.Add(new Vertex(plane.LineIntersect(vertices[inPoints[0]].pos, vertices[outPoints[0]].pos)));
+				vertices.Add(new Vertex(plane.LineIntersect(vertices[inPoints[0]].pos, vertices[outPoints[1]].pos)));
 				
-				Vector3 bPrime = plane.LineIntersect(vertices[a].pos, vertices[b].pos);
-				Vector3 cPrime = plane.LineIntersect(vertices[a].pos, vertices[c].pos);
+				clippedTriangles.Add(new Triangle(inPoints[0], vertices.Count - 2, vertices.Count - 1, triangle.color, triangle.normal));
+			}
+			
+			if (inPointCount == 2 && outPointCount == 1)
+			{
+				vertices.Add(new Vertex(plane.LineIntersect(vertices[inPoints[0]].pos, vertices[outPoints[0]].pos)));
+				vertices.Add(new Vertex(plane.LineIntersect(vertices[inPoints[1]].pos, vertices[outPoints[0]].pos)));
+				
+				clippedTriangles.Add(new Triangle(inPoints[0], inPoints[1], vertices.Count - 2, triangle.color, triangle.normal));
+				clippedTriangles.Add(new Triangle(inPoints[1], vertices.Count - 2, vertices.Count - 1, triangle.color, triangle.normal));
+			}
+			
+			// if (d0 >= 0 && d1 >= 0 && d2 >= 0)
+			// {
+			// 	clippedTriangles.Add(triangle);
+			// 	return;
+			// }
+			// else if (d0 < 0 && d1 < 0 && d2 < 0)
+			// {
+			// 	return;
+			// }
+			// else if (d0 >= 0 ^ d1 >= 0 ^ d2 >= 0)
+			// {
+			// 	// only one vertex is in
+			// 	// A is the vertex that's in
+			// 	// B and C are the other two
+			// 	int a, b, c;
+			// 	if (d0 >= 0)
+			// 	{
+			// 		a = triangle.v0;
+			// 		b = triangle.v1;
+			// 		c = triangle.v2;
+			// 	}
+			// 	else if (d1 >= 0)
+			// 	{
+			// 		a = triangle.v1;
+			// 		b = triangle.v2;
+			// 		c = triangle.v0;
+			// 	}
+			// 	else
+			// 	{
+			// 		a = triangle.v2;
+			// 		b = triangle.v0;
+			// 		c = triangle.v1;
+			// 	}
+				
+			// 	Vector3 bPrime = plane.LineIntersect(vertices[a].pos, vertices[b].pos);
+			// 	Vector3 cPrime = plane.LineIntersect(vertices[a].pos, vertices[c].pos);
 
 
-				vertices.Add(new Vertex(bPrime, vertices[b].tc));	// THIS CAUSES THE TEXTURE COORDINATES TO MOVE WHEN CLIPPED
-				vertices.Add(new Vertex(cPrime, vertices[c].tc));		// but the clipping doesn't really work anyway...
+			// 	vertices.Add(new Vertex(bPrime, vertices[b].tc));	// THIS CAUSES THE TEXTURE COORDINATES TO MOVE WHEN CLIPPED
+			// 	vertices.Add(new Vertex(cPrime, vertices[c].tc));		// but the clipping doesn't really work anyway...
 				
-				clippedTriangles.Add(new Triangle(triangle.v0, vertices.Count-2, vertices.Count-1, triangle.color));
-				return;		// the returned triangle has the vertices [A, B', C']
-			}
-			else if (d0 < 0 ^ d1 < 0 ^ d2 < 0)
-			{
-				// only one vertex is out
-				// C is the vertex that's out
-				// A and B are the other two
-				int a, b, c;
-				if (d0 < 0)
-				{
-					a = triangle.v1;
-					b = triangle.v2;
-					c = triangle.v0;
-				}
-				else if (d1 < 0)
-				{
-					a = triangle.v2;
-					b = triangle.v0;
-					c = triangle.v1;
-				}
-				else
-				{
-					a = triangle.v0;
-					b = triangle.v1;
-					c = triangle.v2;
-				}
+			// 	clippedTriangles.Add(new Triangle(triangle.v0, vertices.Count-2, vertices.Count-1, triangle.color));
+			// 	return;		// the returned triangle has the vertices [A, B', C']
+			// }
+			// else if (d0 < 0 ^ d1 < 0 ^ d2 < 0)
+			// {
+			// 	// only one vertex is out
+			// 	// C is the vertex that's out
+			// 	// A and B are the other two
+			// 	int a, b, c;
+			// 	if (d0 < 0)
+			// 	{
+			// 		a = triangle.v1;
+			// 		b = triangle.v2;
+			// 		c = triangle.v0;
+			// 	}
+			// 	else if (d1 < 0)
+			// 	{
+			// 		a = triangle.v2;
+			// 		b = triangle.v0;
+			// 		c = triangle.v1;
+			// 	}
+			// 	else
+			// 	{
+			// 		a = triangle.v0;
+			// 		b = triangle.v1;
+			// 		c = triangle.v2;
+			// 	}
 				
-				Vector3 aPrime = plane.LineIntersect(vertices[a].pos, vertices[c].pos);
-				Vector3 bPrime = plane.LineIntersect(vertices[b].pos, vertices[c].pos);
+			// 	Vector3 aPrime = plane.LineIntersect(vertices[a].pos, vertices[c].pos);
+			// 	Vector3 bPrime = plane.LineIntersect(vertices[b].pos, vertices[c].pos);
 				
-				vertices.Add(new Vertex(aPrime, vertices[c].tc));	// THIS CAUSES THE TEXTURE COORDINATES TO MOVE WHEN CLIPPED
-				vertices.Add(new Vertex(bPrime, vertices[c].tc));	// but the clipping doesn't really work anyway...
+			// 	vertices.Add(new Vertex(aPrime, vertices[c].tc));	// THIS CAUSES THE TEXTURE COORDINATES TO MOVE WHEN CLIPPED
+			// 	vertices.Add(new Vertex(bPrime, vertices[c].tc));	// but the clipping doesn't really work anyway...
 				
-				clippedTriangles.Add(new Triangle(triangle.v0, triangle.v1, vertices.Count-2, triangle.color));
-				clippedTriangles.Add(new Triangle(vertices.Count-2, triangle.v1, vertices.Count-1, triangle.color));
-				return;		// the returned triangles has the vertices [A, B, A'] and [A', B, B'] respectively
-			}
+			// 	clippedTriangles.Add(new Triangle(triangle.v0, triangle.v1, vertices.Count-2, triangle.color));
+			// 	clippedTriangles.Add(new Triangle(vertices.Count-2, triangle.v1, vertices.Count-1, triangle.color));
+			// 	return;		// the returned triangles has the vertices [A, B, A'] and [A', B, B'] respectively
+			// }
 		}
 	}
 }

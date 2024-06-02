@@ -161,9 +161,9 @@ namespace Engine
 			
 			internal Vector3[] axisGizmo = new Vector3[] {
 				new(0f, 0f, 0f),		// origin
-				new(0.2f, 0f, 0f),		// x axis
-				new(0f, 0.2f, 0f),		// y axis
-				new(0f, 0f, 0.2f)			// z axis
+				new(0.05f, 0f, 0f),		// x axis
+				new(0f, 0.05f, 0f),		// y axis
+				new(0f, 0f, 0.05f)			// z axis
 			};
 			
 			internal Matrix GetOrientation

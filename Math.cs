@@ -596,7 +596,7 @@ namespace Engine
 			/// <param name="vertex">The point to calculate the distance to.</param>
 			internal float SignedDistance(Vector3 vertex)
 			{
-				return Vector3.Dot(normal, vertex) + distance;
+				return Vector3.Dot(normal, vertex.Normalized()) - distance;
 			}
 			
 			/// <summary>
@@ -620,13 +620,16 @@ namespace Engine
 			public int v1;
 			public int v2;
 			public Color color;
+			public Vector3 normal;
 			
-			public Triangle(int v0, int v1, int v2, Color color)
+			
+			public Triangle(int v0, int v1, int v2, Color color, Vector3 normal)
 			{
 				this.v0 = v0;
 				this.v1 = v1;
 				this.v2 = v2;
 				this.color = color;
+				this.normal = normal;
 			}
 
 			public override string ToString()
