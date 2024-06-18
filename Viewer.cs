@@ -4,29 +4,58 @@ using SFML.System;
 
 namespace Engine
 {
+	/// <summary>
+	/// A window that can display scenes.
+	/// </summary>
 	public class Viewer
 	{
-		private Renderer renderer = null!;
-		private Dictionary<string, Scene> scenes = new(){};
+		private readonly Renderer renderer;
+		private readonly Dictionary<string, Scene> scenes;
 		private float deltaTime;
 		
+		/// <summary>
+		/// The scene currently displayed in the viewer.
+		/// </summary>
 		public Scene activeScene;
+		/// <summary>
+		/// The width of the viewer window.
+		/// </summary>
 		public int WindowWidth { get => renderer.CanvasWidth; }
+		/// <summary>
+		/// The height of the viewer window.
+		/// </summary>
 		public int WindowHeight { get => renderer.CanvasHeight; }
 		
-		public Viewer(int windowWidth, int windowHeight, float fov, Scene mainScene)
+		/// <summary>
+		/// Initializes a new instance of the Viewer class with a specified window size and a main scene.
+		/// </summary>
+		/// <param name="windowWidth">The width of the viewer window.</param>
+		/// <param name="windowHeight">The height of the viewer window.</param>
+		/// <param name="mainScene">The first scene, which is displayed by default.</param>
+		/// <param name="fov">The field of view.</param>
+		public Viewer(int windowWidth, int windowHeight, Scene mainScene, float fov=90.0f)
 		{	
 			renderer = new(windowWidth, windowHeight, fov);
 			
+			scenes = new();
 			AddScene(mainScene);
 			activeScene = mainScene;
 		}
 		
+		/// <summary>
+		/// Add a scene to the viewer's list of scenes.
+		/// </summary>
+		/// <param name="scene">The scene to add.</param>
 		public void AddScene(Scene scene)
 		{
 			scenes.Add(scene.name, scene);
+			Console.WriteLine($"Added scene {scene.name}.");
 		}
 		
+		/// <summary>
+		/// Change which scene is currently displayed in the viewer.
+		/// </summary>
+		/// <param name="sceneName">The name of the scene to change to.</param>
 		public void ChangeToScene(string sceneName)
 		{
 			if (scenes.ContainsKey(sceneName))
@@ -35,15 +64,20 @@ namespace Engine
 			}
 			else
 			{
-				throw new ArgumentException($"Could not find scene '{sceneName}'!");
+				throw new ArgumentOutOfRangeException($"Could not find scene '{sceneName}'!");
 			}
 		}
 		
+		/// <summary>
+		/// Change which scene is currently displayed in the viewer.
+		/// </summary>
+		/// <param name="scene">The scene to change to.</param>
 		public void ChangeToScene(Scene scene)
 		{
 			if (scenes.ContainsKey(scene.name))
 			{
 				activeScene = scenes[scene.name];
+				scene.Init();
 			}
 			else
 			{
@@ -51,6 +85,10 @@ namespace Engine
 			}
 		}
 		
+		/// <summary>
+		/// Start the viewer window.
+		/// </summary>
+		/// <param name="title">The title of the window.</param>
 		public void Run(string title="Window")
 		{
 			uint width = (uint)WindowWidth;
@@ -64,46 +102,50 @@ namespace Engine
 			Texture canvasTexture = new(width, height);
 			Sprite canvasSprite = new(canvasTexture);
 			
-			
-			
-			
 			Clock clock = new();
 			int frames = 0;
 			float dtTotal = 0;
 			
-			activeScene.Init();	// user defined
+			// activate user written functions
+			activeScene.Init();
 			foreach (ObjectScript script in activeScene.scripts)
 			{
 				script.Init();
 			}
 			
+			
 			while (window.IsOpen)
 			{
-				deltaTime = clock.ElapsedTime.AsSeconds();	// calculate deltaTime
+				// calculate deltaTime
+				deltaTime = clock.ElapsedTime.AsSeconds();
 				clock.Restart();
-				
 				dtTotal += deltaTime;
 				frames++;
-					
-				if (dtTotal > 1)	// once every second print the average fps
+				if (dtTotal > 1)	// once every second, print the average fps
 				{
 					Console.Write("\rFPS: " + (frames/dtTotal).ToString("0.0") + "   ");
 					dtTotal = 0;
 					frames = 0;
 				}
 				
-				window.DispatchEvents();	// event handling
 				
-				activeScene.Update(deltaTime);	// user defined
+				// event handling
+				window.DispatchEvents();
+				
+				// activate user written functions
+				activeScene.Update(deltaTime);
 				foreach (ObjectScript script in activeScene.scripts)
 				{
 					script.Update(deltaTime);
 				}
 				
-				Canvas canvas = new(width, height);
-				renderer.RenderScene(activeScene, ref canvas);	// render scene
 				
-				canvasTexture.Update(canvas.screen);	// update display
+				// render scene
+				Canvas canvas = new(width, height);
+				renderer.RenderScene(activeScene, ref canvas);
+				
+				// update display
+				canvasTexture.Update(canvas.screen);
 				window.Draw(canvasSprite);
 				window.Display();
 			}

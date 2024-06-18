@@ -1,8 +1,5 @@
 using Engine.Math;
 using Engine.Objects;
-// using SFML.Graphics;
-// using SFML.Graphics;
-// using SFML.Graphics;
 
 namespace Engine
 {
@@ -43,6 +40,7 @@ namespace Engine
 			canvasHeight = height ?? canvasHeight;
 			aspectRatio = canvasWidth/canvasHeight;
 			projectionMatrix[0, 0] = aspectRatio*fovFactor;
+			projectionMatrix[1, 1] = -fovFactor;
 		}
 		
 		internal Renderer(int canvasWidth, int canvasHeight, float fov = 90.0f, float zNear=0.1f, float zFar = 1000.0f)
@@ -54,19 +52,19 @@ namespace Engine
 			viewportHeight = 2;
 			this.zNear = zNear;
 			this.zFar = zFar;
-			this.clippingPlanes = new Plane[]{new Plane(new Vector3( 0, 0, 1), -zNear),	// near
-											  new Plane(new Vector3( 1, 0, 1), 0),		// left
-											  new Plane(new Vector3(-1, 0, 1), 0),		// right
-											  new Plane(new Vector3( 0, 1, 1), 0),		// bottom
-											  new Plane(new Vector3( 0,-1, 1), 0)};		// top
+			this.clippingPlanes = new Plane[]{new(new Vector3( 0, 0, 1), -zNear),	// near
+											  new(new Vector3( 1, 0, 1), 0),		// left
+											  new(new Vector3(-1, 0, 1), 0),		// right
+											  new(new Vector3( 0, 1, 1), 0),		// bottom
+											  new(new Vector3( 0,-1, 1), 0)};		// top
 											  
 			aspectRatio = canvasWidth > canvasHeight ? canvasWidth/canvasHeight : canvasHeight/canvasWidth;
 			fovFactor = 1/MathF.Tan(this.fov/2);
 			
-			projectionMatrix = new(aspectRatio*fovFactor, 0         , 0          , 0                      ,
-								   0                    , -fovFactor, 0         , 0                      ,
+			projectionMatrix = new(aspectRatio*fovFactor, 0         , 0                , 0                       ,
+								   0                    , -fovFactor, 0                , 0                       ,
 								   0                    , 0         , zFar/(zFar-zNear), -zNear*zFar/(zFar-zNear),
-								   0                    , 0         , 1          , 0                      );
+								   0                    , 0         , 1                , 0                       );
 		}
 		
 		internal void RenderScene(Scene scene, ref Canvas canvas)

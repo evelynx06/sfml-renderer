@@ -5,7 +5,7 @@ namespace Engine
 	namespace Math
 	{
 		/// <summary>
-		/// A 4x4 matrix
+		/// A 4x4 matrix.
 		/// </summary>
 		public class Matrix
 		{
@@ -26,6 +26,9 @@ namespace Engine
 			public float m43;
 			public float m44;
 			
+			/// <summary>
+			/// A 4x4 identity matrix.
+			/// </summary>
 			public static Matrix Identity
 			{
 				get { return new Matrix(1, 0, 0, 0,
@@ -34,9 +37,12 @@ namespace Engine
 										0, 0, 0, 1); }
 			}
 			
-			public Matrix()
+			private protected Matrix()
 			{ }
 			
+			/// <summary>
+			/// Initializes a new 4x4 Matrix with specified values.
+			/// </summary>
 			public Matrix(float m11, float m12, float m13, float m14,
 						  float m21, float m22, float m23, float m24,
 						  float m31, float m32, float m33, float m34,
@@ -60,6 +66,7 @@ namespace Engine
 				this.m44 = m44;
 			}
 			
+			/// <inheritdoc/>
 			public float this[int x, int y]
 			{
 				get => GetValue(x, y);
@@ -147,6 +154,9 @@ namespace Engine
 				}
 			}
 			
+			/// <summary>
+			/// Matrix multiplication.
+			/// </summary>
 			public static Matrix operator *(Matrix m1, Matrix m2)
 			{
 				Matrix result = new();
@@ -165,6 +175,10 @@ namespace Engine
 				return result;
 			}
 			
+			/// <summary>
+			/// Get the transposed version of the matrix.
+			/// </summary>
+			/// <returns>The transposed matrix.</returns>
 			public Matrix Transposed()
 			{
 				Matrix result = new();
@@ -179,7 +193,8 @@ namespace Engine
 				
 				return result;
 			}
-
+			
+			/// <inheritdoc/>
 			public override string ToString()
 			{
 				return $"[{m11}; {m12}; {m13}; {m14};\n {m21}; {m22}; {m23}; {m24};\n {m31}; {m32}; {m33}; {m34};\n {m41}; {m42}; {m43}; {m44}]";
@@ -193,13 +208,20 @@ namespace Engine
 		{
 			public float w;
 			
-			// public Vector3 Vector3 { get => new(x, y, z); }
-			// public Vector2 Vector2 { get => new(x, y); }
+			/// <summary>
+			/// A 4-dimensional vector initialized to all zeros.
+			/// </summary>
+			public static new Vector4 Zero
+			{
+				get { return new(0f, 0f, 0f, 0f); }
+			}
 			
-			
-			public Vector4()
+			private protected Vector4()
 			{ }
 			
+			/// <summary>
+			/// Initializes a new Vector4 with specified values by extending a Vector3.
+			/// </summary>
 			public Vector4(Vector3 v, float w)
 			{
 				this.x = v.x;
@@ -208,6 +230,9 @@ namespace Engine
 				this.w = w;
 			}
 			
+			/// <summary>
+			/// Initializes a new Vector4 with specified values by extending a Vector2.
+			/// </summary>
 			public Vector4(Vector2 v, float z, float w)
 			{
 				this.x = v.x;
@@ -216,6 +241,9 @@ namespace Engine
 				this.w = w;
 			}
 			
+			/// <summary>
+			/// Initializes a new Vector4 with specified values.
+			/// </summary>
 			public Vector4(float x, float y, float z, float w)
 			{
 				this.x = x;
@@ -224,6 +252,7 @@ namespace Engine
 				this.w = w;
 			}
 			
+			/// <inheritdoc/>
 			public new float this[int i]
 			{
 				get => GetValue(i);
@@ -263,31 +292,37 @@ namespace Engine
 				}
 			}
 			
+			/// <inheritdoc/>
 			public override string ToString()
 			{
 				return $"[{x}; {y}; {z}; {w}]";
 			}
 			
+			/// <inheritdoc/>
 			public static Vector4 operator +(Vector4 left, Vector4 right)
 			{
 				return new Vector4(left.x + right.x, left.y + right.y, left.z + right.z, left.w + right.w);
 			}
 			
+			/// <inheritdoc/>
 			public static Vector4 operator -(Vector4 left, Vector4 right)
 			{
 				return new Vector4(left.x - right.x, left.y - right.y, left.z - right.z, left.w - right.w);
 			}
 			
+			/// <inheritdoc/>
 			public static Vector4 operator *(Vector4 v, float factor)
 			{
 				return new Vector4(v.x * factor, v.y * factor, v.z * factor, v.w * factor);
 			}
 			
+			/// <inheritdoc/>
 			public static Vector4 operator *(float factor, Vector4 v)
 			{
 				return new Vector4(v.x * factor, v.y * factor, v.z * factor, v.w * factor);
 			}
 			
+			/// <inheritdoc/>
 			public static Vector4 operator *(Matrix mat, Vector4 vec)
 			{
 				Vector4 result = new();
@@ -303,41 +338,17 @@ namespace Engine
 				return result;
 			}
 			
+			/// <inheritdoc/>
 			public static Vector4 operator /(Vector4 v, float scalar)
 			{
 				return new Vector4(v.x/scalar, v.y/scalar, v.z/scalar, v.w/scalar);
 			}
 			
+			/// <inheritdoc/>
 			public static float Dot(Vector4 left, Vector4 right)
 			{
 				return left.x*right.x + left.y*right.y + left.z*right.z + left.w*right.w;
 			}
-			
-			public float Dot(Vector4 other)
-			{
-				return this.x*other.x + this.y*other.y + this.z*other.z + this.w*other.w;
-			}
-			
-			// public static Vector4 Cross(Vector4 v1, Vector4 v2)
-			// {
-			// 	return new Vector4(v1.y*v2.z - v1.z*v2.y,
-			// 					  v1.z*v2.x - v1.x*v2.z,
-			// 					  v1.x*v2.y - v1.y*v2.x,
-			// 					  v1.w);
-			// }
-			
-			// public static float Distance(Vector4 v1, Vector4 v2)
-			// {
-			// 	Vector4 a = v1/v1.w;
-			// 	Vector4 b = v2/v2.w;
-			// 	return MathF.Abs(MathF.Sqrt((b.x-a.x)*(b.x-a.x) + (b.y-a.y)*(b.y-a.y) + (b.z-a.z)*(b.z-a.z)));
-			// }
-			
-			// public Vector4 Normalized()
-			// {
-			// 	float magnitude = MathF.Sqrt(x*x + y*y + z*z);
-			// 	return new Vector4(x/magnitude, y/magnitude, z/magnitude, w);
-			// }
 		}
 		
 		/// <summary>
@@ -347,16 +358,20 @@ namespace Engine
 		{
 			public float z;
 			
-			public Vector3()
+			/// <summary>
+			/// A 3-dimensional vector initialized to all zeros.
+			/// </summary>
+			public static new Vector3 Zero
+			{
+				get { return new(0f, 0f, 0f); }
+			}
+			
+			private protected Vector3()
 			{ }
 			
-			// public Vector3(Vector4 v)
-			// {
-			// 	this.x = v.x;
-			// 	this.y = v.y;
-			// 	this.z = v.z;
-			// }
-			
+			/// <summary>
+			/// Initializes a new Vector3 with specified values by extending a Vector2.
+			/// </summary>
 			public Vector3(Vector2 v, float z)
 			{
 				this.x = v.x;
@@ -364,6 +379,9 @@ namespace Engine
 				this.z = z;
 			}
 			
+			/// <summary>
+			/// Initializes a new Vector3 with specified values.
+			/// </summary>
 			public Vector3(float x, float y, float z)
 			{
 				this.x = x;
@@ -371,6 +389,7 @@ namespace Engine
 				this.z = z;
 			}
 			
+			/// <inheritdoc/>
 			public new float this[int i]
 			{
 				get => GetValue(i);
@@ -406,56 +425,67 @@ namespace Engine
 				}
 			}
 			
+			/// <inheritdoc/>
 			public override string ToString()
 			{
 				return $"[{x}; {y}; {z}]";
 			}
 			
+			/// <inheritdoc/>
 			public static Vector3 operator +(Vector3 left, Vector3 right)
 			{
 				return new Vector3(left.x + right.x, left.y + right.y, left.z + right.z);
 			}
 			
+			/// <inheritdoc/>
 			public static Vector3 operator +(Vector3 left, Vector4 right)
 			{
 				return new Vector3(left.x + right.x, left.y + right.y, left.z + right.z);
 			}
 			
+			/// <inheritdoc/>
 			public static Vector3 operator -(Vector3 left, Vector3 right)
 			{
 				return new Vector3(left.x - right.x, left.y - right.y, left.z - right.z);
 			}
 			
+			/// <inheritdoc/>
 			public static Vector3 operator -(Vector3 left, Vector4 right)
 			{
 				return new Vector3(left.x - right.x, left.y - right.y, left.z - right.z);
 			}
 			
+			/// <inheritdoc/>
 			public static Vector3 operator *(Vector3 v, float factor)
 			{
 				return new Vector3(v.x * factor, v.y * factor, v.z * factor);
 			}
 			
+			/// <inheritdoc/>
 			public static Vector3 operator *(float factor, Vector3 v)
 			{
 				return new Vector3(v.x * factor, v.y * factor, v.z * factor);
 			}
 			
+			/// <inheritdoc/>
 			public static Vector3 operator /(Vector3 v, float factor)
 			{
 				return new Vector3(v.x/factor, v.y/factor, v.z/factor);
 			}
 			
+			/// <summary>
+			/// Calculate the vector dot product.
+			/// </summary>
+			/// <returns>The dot product of the two vectors.</returns>
 			public static float Dot(Vector3 left, Vector3 right)
 			{
 				return left.x*right.x + left.y*right.y + left.z*right.z;
 			}
 			
-			public float Dot(Vector3 other)
-			{
-				return this.x*other.x + this.y*other.y + this.z*other.z;
-			}
-			
+			/// <summary>
+			/// Calculate the vector cross product.
+			/// </summary>
+			/// <returns>The cross product of the two vectors.</returns>
 			public static Vector3 Cross(Vector3 left, Vector3 right)
 			{
 				return new Vector3(left.y*right.z - left.z*right.y,
@@ -463,18 +493,26 @@ namespace Engine
 								  left.x*right.y - left.y*right.x);
 			}
 			
+			/// <summary>
+			/// Calculate the distance between two 3D-coordinates.
+			/// </summary>
+			/// <returns>The distance between the points.</returns>
 			public static float Distance(Vector3 left, Vector3 right)
 			{
 				return MathF.Abs(MathF.Sqrt((right.x-left.x)*(right.x-left.x) + (right.y-left.y)*(right.y-left.y) + (right.z-left.z)*(right.z-left.z)));
 			}
 			
+			/// <summary>
+			/// Get the normalized version of the vector.
+			/// </summary>
+			/// <returns>The normalized vector.</returns>
 			public Vector3 Normalized()
 			{
 				float magnitude = MathF.Sqrt(x*x + y*y + z*z);
 				return new Vector3(x/magnitude, y/magnitude, z/magnitude);
 			}
 			
-			public Vector3 InterpolateTo(Vector3 dest, float alpha)
+			internal Vector3 InterpolateTo(Vector3 dest, float alpha)
 			{
 				return this + (dest - this) * alpha;
 			}
@@ -488,27 +526,27 @@ namespace Engine
 			public float x;
 			public float y;
 			
-			// public Vector2(Vector4 v)
-			// {
-			// 	this.x = v.x;
-			// 	this.y = v.y;
-			// }
+			/// <summary>
+			/// A 2-dimensional vector initialized to all zeros.
+			/// </summary>
+			public static Vector2 Zero
+			{
+				get { return new(0f, 0f); }
+			}
 			
-			// public Vector2(Vector3 v)
-			// {
-			// 	this.x = v.x;
-			// 	this.y = v.y;
-			// }
-			
-			public Vector2()
+			private protected Vector2()
 			{ }
 			
+			/// <summary>
+			/// Initializes a new Vector2 with specified values.
+			/// </summary>
 			public Vector2(float x, float y)
 			{
 				this.x = x;
 				this.y = y;
 			}
 			
+			/// <inheritdoc/>
 			public float this[int i]
 			{
 				get => GetValue(i);
@@ -540,37 +578,58 @@ namespace Engine
 				}
 			}
 			
+			/// <inheritdoc/>
 			public override string ToString()
 			{
 				return $"[{x}; {y}]";
 			}
 			
+			/// <summary>
+			/// Vector addition.
+			/// </summary>
+			/// <returns>A vector whose elements are the sums of the corresponding elements in the vectors being added.</returns>
 			public static Vector2 operator +(Vector2 left, Vector2 right)
 			{
 				return new Vector2(left.x + right.x, left.y + right.y);
 			}
 			
+			/// <summary>
+			/// Vector subtraction.
+			/// </summary>
+			/// <returns>A vector whose elements are the differences of the corresponding elements in the vectors being subtracted.</returns>
 			public static Vector2 operator -(Vector2 left, Vector2 right)
 			{
 				return new Vector2(left.x - right.x, left.y - right.y);
 			}
 			
+			/// <summary>
+			/// Vector scaling.
+			/// </summary>
+			/// <returns>A vector whose elements have been multiplied by a factor.</returns>
 			public static Vector2 operator *(float factor, Vector2 v)
 			{
 				return new Vector2(v.x * factor, v.y * factor);
 			}
 			
+			/// <summary>
+			/// Vector scaling.
+			/// </summary>
+			/// <returns>A vector whose elements have been multiplied by a factor.</returns>
 			public static Vector2 operator *(Vector2 v, float factor)
 			{
 				return new Vector2(v.x * factor, v.y * factor);
 			}
 			
+			/// <summary>
+			/// Vector scaling.
+			/// </summary>
+			/// <returns>A vector whose elements have been divided by a factor.</returns>
 			public static Vector2 operator /(Vector2 v, float factor)
 			{
 				return new Vector2(v.x/factor, v.y/factor);
 			}
 			
-			public Vector2 InterpolateTo(Vector2 dest, float alpha)
+			internal Vector2 InterpolateTo(Vector2 dest, float alpha)
 			{
 				return this + (dest - this) * alpha;
 			}
@@ -612,7 +671,7 @@ namespace Engine
 		}
 		
 		/// <summary>
-		/// A triangle containing the indexes of its vertices and a color value.
+		/// A triangle containing the indexes of its vertices, a color value and a normal vector.
 		/// </summary>
 		public class Triangle
 		{
@@ -622,7 +681,14 @@ namespace Engine
 			public Color color;
 			public Vector3 normal;
 			
-			
+			/// <summary>
+			/// Initializes a new Triangle.
+			/// </summary>
+			/// <param name="v0">The index of the triangle's first vertex.</param>
+			/// <param name="v1">The index of the triangle's second vertex.</param>
+			/// <param name="v2">The index of the triangle's third vertex.</param>
+			/// <param name="color">The triangle's color value.</param>
+			/// <param name="normal">The triangle's normal vector.</param>
 			public Triangle(int v0, int v1, int v2, Color color, Vector3 normal)
 			{
 				this.v0 = v0;
@@ -631,7 +697,8 @@ namespace Engine
 				this.color = color;
 				this.normal = normal;
 			}
-
+			
+			/// <inheritdoc/>
 			public override string ToString()
 			{
 				return $"[{v0}, {v1}, {v2}, {color}]";

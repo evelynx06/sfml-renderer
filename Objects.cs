@@ -69,12 +69,29 @@ namespace Engine
 		/// </summary>
 		public class EngineObject
 		{
+			/// <summary>
+			/// The name of the object.
+			/// </summary>
 			public string name;
+			/// <summary>
+			/// The model of the object.
+			/// </summary>
 			public Model? model;
+			/// <summary>
+			/// The position of the object.
+			/// </summary>
 			public Vector3 position;
+			/// <summary>
+			/// The scale of the object.
+			/// </summary>
 			public float scale;
+			
 			private Vector3 rotation;
 			
+			/// <summary>
+			/// The rotation of the object.
+			/// </summary>
+			/// <value></value>
 			public Vector3 Rotation
 			{
 				get { return rotation; }
@@ -88,6 +105,16 @@ namespace Engine
 				get { return Methods.MakeTranslationMatrix(position) * (orientation * Methods.MakeScalingMatrix(scale)); }
 			}
 			
+			/// <summary>
+			/// Initializes a new instance of the class EngineObject.
+			/// </summary>
+			/// <param name="position">The position of the object.</param>
+			/// <param name="name">The name of the object.</param>
+			/// <param name="model">The model to render the object as.</param>
+			/// <param name="xRotation">The object's rotation around the x axis, in degrees.</param>
+			/// <param name="yRotation">The object's rotation around the y axis, in degrees.</param>
+			/// <param name="zRotation">The object's rotation around the z axis, in degrees.</param>
+			/// <param name="scale">The scale of the object.</param>
 			public EngineObject(Vector3 position, string name="DefaultObject", Model? model=null, float xRotation=0, float yRotation=0, float zRotation=0, float scale=1)
 			{
 				this.name = name;
@@ -105,13 +132,35 @@ namespace Engine
 		/// </summary>
 		public class Model
 		{
+			/// <summary>
+			/// List of the model's vertices.
+			/// </summary>
 			public Vertex[] vertices;
+			/// <summary>
+			/// List of the model's triangles.
+			/// </summary>
 			public Triangle[] triangles;
+			/// <summary>
+			/// The center point of the model.
+			/// </summary>
 			public Vector3 boundsCenter;
+			/// <summary>
+			/// The radius of the objects bounding sphere.
+			/// </summary>
 			public float boundsRadius;
 			
+			/// <summary>
+			/// The model's texture.
+			/// </summary>
 			public Image? texture = null;
 			
+			/// <summary>
+			/// Initializes a new instance of the class Model.
+			/// </summary>
+			/// <param name="vertices">The vertices of the model.</param>
+			/// <param name="triangles">The triangles of the model.</param>
+			/// <param name="texture">The texture of the model.</param>
+			/// <param name="boundsRadius">The radius of the model's bounding sphere.</param>
 			public Model(Vertex[] vertices, Triangle[] triangles, Image? texture=null, float boundsRadius=0)
 			{
 				this.vertices = vertices;
@@ -121,6 +170,9 @@ namespace Engine
 				this.texture = texture;
 			}
 			
+			/// <summary>
+			/// Calculates the center point of the model.
+			/// </summary>
 			public Vector4 FindCenter()
 			{
 				float meanX = 0;
@@ -137,6 +189,9 @@ namespace Engine
 				return new Vector4(meanX/len, meanY/len, meanZ/len, 1);
 			}
 			
+			/// <summary>
+			/// Calculates the radius of the model's bounding sphere.
+			/// </summary>
 			public float FindBoundingRadius()
 			{
 				float r = 0;
@@ -155,6 +210,9 @@ namespace Engine
 		/// </summary>
 		public class Camera
 		{
+			/// <summary>
+			/// The camera's position.
+			/// </summary>
 			public Vector3 position;
 			internal Matrix xOrientation;
 			internal Matrix yOrientation;
@@ -171,11 +229,20 @@ namespace Engine
 				get { return yOrientation * xOrientation; }
 			}
 			
+			/// <summary>
+			/// A default camera, placed at (0, 0, 0).
+			/// </summary>
 			public static Camera Default
 			{
 				get { return new Camera(new Vector3(0, 0, 0)); }
 			}
 			
+			/// <summary>
+			/// Initializes a new camera instance.
+			/// </summary>
+			/// <param name="position">The position of the camera.</param>
+			/// <param name="xRotation">The camera's rotation around the x axis, in degrees.</param>
+			/// <param name="yRotation">The camera's rotation around the y axis, in degrees.</param>
 			public Camera(Vector3 position, float xRotation=0, float yRotation=0)
 			{
 				this.position = position;
@@ -183,11 +250,20 @@ namespace Engine
 				this.yOrientation = Methods.MakeOYRotationMatrix(yRotation);
 			}
 			
+			/// <summary>
+			/// Move the camera using a translation vector.
+			/// </summary>
+			/// <param name="vector">The translation vector.</param>
 			public void Translate(Vector3 vector)
 			{
 				position += yOrientation * new Vector4(vector, 1);
 			}
 			
+			/// <summary>
+			/// Rotate the camera around an axis by the specified angle.
+			/// </summary>
+			/// <param name="axis">The axis to rotate around ('x', 'y', or 'z')</param>
+			/// <param name="degrees"></param>
 			public void Rotate(char axis, float degrees)
 			{
 				switch (axis)
@@ -198,24 +274,40 @@ namespace Engine
 					case 'y':
 						yOrientation *= Methods.MakeOYRotationMatrix(degrees);
 						break;
+					case 'z':
+						throw new NotImplementedException("Camera rotation around z axis not supported yet... :(");
 					default:
 						throw new ArgumentException($"Invalid/unsupported rotation axis {axis}");
 				}
 			}
 		}
 		
+		/// <summary>
+		/// A point in 3D space, with an optional 2D texture coordinate.
+		/// </summary>
 		public class Vertex
 		{
+			/// <summary>
+			/// The position of the vertex.
+			/// </summary>
 			public Vector3 pos;
+			/// <summary>
+			/// The 2D texture coordinate of the vertex.
+			/// </summary>
 			public Vector2? tc;
 			
+			/// <summary>
+			/// Initialize a new instance of the class Vertex.
+			/// </summary>
+			/// <param name="position">The position of the vertex.</param>
+			/// <param name="textureCoordinate">The 2D texture coordinate of the vertex.</param>
 			public Vertex(Vector3 position, Vector2? textureCoordinate=null)
 			{
 				pos = position;
 				tc = textureCoordinate;
 			}
 			
-			public Vertex InterpolateTo(Vertex dest, float alpha)
+			internal Vertex InterpolateTo(Vertex dest, float alpha)
 			{
 				return new(pos.InterpolateTo(dest.pos, alpha), tc?.InterpolateTo(dest.tc ?? tc, alpha));
 			}

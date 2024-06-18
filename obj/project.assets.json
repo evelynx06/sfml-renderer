@@ -751,6 +751,185 @@
           "lib/netstandard2.0/SFML.Window.dll": {}
         }
       }
+    },
+    "net6.0/linux-x64": {
+      "CommunityToolkit.HighPerformance/8.2.2": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/CommunityToolkit.HighPerformance.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/CommunityToolkit.HighPerformance.dll": {}
+        }
+      },
+      "CSFML/2.5.2": {
+        "type": "package",
+        "native": {
+          "runtimes/linux-x64/native/libcsfml-audio.so": {},
+          "runtimes/linux-x64/native/libcsfml-graphics.so": {},
+          "runtimes/linux-x64/native/libcsfml-system.so": {},
+          "runtimes/linux-x64/native/libcsfml-window.so": {},
+          "runtimes/linux-x64/native/libsfml-audio.so": {},
+          "runtimes/linux-x64/native/libsfml-audio.so.2.5": {},
+          "runtimes/linux-x64/native/libsfml-audio.so.2.5.1": {},
+          "runtimes/linux-x64/native/libsfml-graphics.so": {},
+          "runtimes/linux-x64/native/libsfml-graphics.so.2.5": {},
+          "runtimes/linux-x64/native/libsfml-graphics.so.2.5.1": {},
+          "runtimes/linux-x64/native/libsfml-system.so": {},
+          "runtimes/linux-x64/native/libsfml-system.so.2.5": {},
+          "runtimes/linux-x64/native/libsfml-system.so.2.5.1": {},
+          "runtimes/linux-x64/native/libsfml-window.so": {},
+          "runtimes/linux-x64/native/libsfml-window.so.2.5": {},
+          "runtimes/linux-x64/native/libsfml-window.so.2.5.1": {}
+        },
+        "build": {
+          "build/netstandard2.0/_._": {}
+        }
+      },
+      "EarClipper/1.2.0": {
+        "type": "package",
+        "dependencies": {
+          "PeterO.Numbers": "1.8.2"
+        },
+        "compile": {
+          "lib/netstandard2.0/EarClipperLib.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/EarClipperLib.dll": {}
+        }
+      },
+      "PeterO.Numbers/1.8.2": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard1.0/Numbers.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard1.0/Numbers.dll": {}
+        }
+      },
+      "SFML.Graphics/2.5.1": {
+        "type": "package",
+        "dependencies": {
+          "CSFML": "2.5.2",
+          "SFML.System": "2.5.1",
+          "SFML.Window": "2.5.1"
+        },
+        "compile": {
+          "lib/netstandard2.0/SFML.Graphics.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SFML.Graphics.dll": {}
+        }
+      },
+      "SFML.System/2.5.1": {
+        "type": "package",
+        "dependencies": {
+          "CSFML": "2.5.2"
+        },
+        "compile": {
+          "lib/netstandard2.0/SFML.System.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SFML.System.dll": {}
+        }
+      },
+      "SFML.Window/2.5.1": {
+        "type": "package",
+        "dependencies": {
+          "CSFML": "2.5.2",
+          "SFML.System": "2.5.1"
+        },
+        "compile": {
+          "lib/netstandard2.0/SFML.Window.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SFML.Window.dll": {}
+        }
+      }
+    },
+    "net6.0/win10-x64": {
+      "CommunityToolkit.HighPerformance/8.2.2": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/CommunityToolkit.HighPerformance.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/CommunityToolkit.HighPerformance.dll": {}
+        }
+      },
+      "CSFML/2.5.2": {
+        "type": "package",
+        "native": {
+          "runtimes/win-x64/native/csfml-audio.dll": {},
+          "runtimes/win-x64/native/csfml-graphics.dll": {},
+          "runtimes/win-x64/native/csfml-system.dll": {},
+          "runtimes/win-x64/native/csfml-window.dll": {},
+          "runtimes/win-x64/native/openal32.dll": {}
+        },
+        "build": {
+          "build/netstandard2.0/_._": {}
+        }
+      },
+      "EarClipper/1.2.0": {
+        "type": "package",
+        "dependencies": {
+          "PeterO.Numbers": "1.8.2"
+        },
+        "compile": {
+          "lib/netstandard2.0/EarClipperLib.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/EarClipperLib.dll": {}
+        }
+      },
+      "PeterO.Numbers/1.8.2": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard1.0/Numbers.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard1.0/Numbers.dll": {}
+        }
+      },
+      "SFML.Graphics/2.5.1": {
+        "type": "package",
+        "dependencies": {
+          "CSFML": "2.5.2",
+          "SFML.System": "2.5.1",
+          "SFML.Window": "2.5.1"
+        },
+        "compile": {
+          "lib/netstandard2.0/SFML.Graphics.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SFML.Graphics.dll": {}
+        }
+      },
+      "SFML.System/2.5.1": {
+        "type": "package",
+        "dependencies": {
+          "CSFML": "2.5.2"
+        },
+        "compile": {
+          "lib/netstandard2.0/SFML.System.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SFML.System.dll": {}
+        }
+      },
+      "SFML.Window/2.5.1": {
+        "type": "package",
+        "dependencies": {
+          "CSFML": "2.5.2",
+          "SFML.System": "2.5.1"
+        },
+        "compile": {
+          "lib/netstandard2.0/SFML.Window.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/SFML.Window.dll": {}
+        }
+      }
     }
   },
   "libraries": {
@@ -1122,12 +1301,46 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Runtime.linux-x64",
+            "version": "[6.0.4, 6.0.4]"
+          },
+          {
+            "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
+            "version": "[6.0.4, 6.0.4]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.linux-x64",
+            "version": "[6.0.4, 6.0.4]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.linux-x64",
+            "version": "[6.0.4, 6.0.4]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Runtime.win-x64",
+            "version": "[6.0.4, 6.0.4]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
+            "version": "[6.0.4, 6.0.4]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.202\\RuntimeIdentifierGraph.json"
+      }
+    },
+    "runtimes": {
+      "linux-x64": {
+        "#import": []
+      },
+      "win10-x64": {
+        "#import": []
       }
     }
   }

@@ -1,0 +1,544 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Engine</name>
+    </assembly>
+    <members>
+        <member name="T:Engine.Canvas">
+            <summary>
+            A canvas that handles drawing lines and triangles, with a depth buffer
+            </summary>
+        </member>
+        <member name="T:Engine.Math.Matrix">
+            <summary>
+            A 4x4 matrix.
+            </summary>
+        </member>
+        <member name="P:Engine.Math.Matrix.Identity">
+            <summary>
+            A 4x4 identity matrix.
+            </summary>
+        </member>
+        <member name="M:Engine.Math.Matrix.#ctor(System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            Initializes a new 4x4 Matrix with specified values.
+            </summary>
+        </member>
+        <member name="P:Engine.Math.Matrix.Item(System.Int32,System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Matrix.op_Multiply(Engine.Math.Matrix,Engine.Math.Matrix)">
+            <summary>
+            Matrix multiplication.
+            </summary>
+        </member>
+        <member name="M:Engine.Math.Matrix.Transposed">
+            <summary>
+            Get the transposed version of the matrix.
+            </summary>
+            <returns>The transposed matrix.</returns>
+        </member>
+        <member name="M:Engine.Math.Matrix.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="T:Engine.Math.Vector4">
+            <summary>
+            A 4-dimensional vector.
+            </summary>
+        </member>
+        <member name="P:Engine.Math.Vector4.Zero">
+            <summary>
+            A 4-dimensional vector initialized to all zeros.
+            </summary>
+        </member>
+        <member name="M:Engine.Math.Vector4.#ctor(Engine.Math.Vector3,System.Single)">
+            <summary>
+            Initializes a new Vector4 with specified values by extending a Vector3.
+            </summary>
+        </member>
+        <member name="M:Engine.Math.Vector4.#ctor(Engine.Math.Vector2,System.Single,System.Single)">
+            <summary>
+            Initializes a new Vector4 with specified values by extending a Vector2.
+            </summary>
+        </member>
+        <member name="M:Engine.Math.Vector4.#ctor(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            Initializes a new Vector4 with specified values.
+            </summary>
+        </member>
+        <member name="P:Engine.Math.Vector4.Item(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector4.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector4.op_Addition(Engine.Math.Vector4,Engine.Math.Vector4)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector4.op_Subtraction(Engine.Math.Vector4,Engine.Math.Vector4)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector4.op_Multiply(Engine.Math.Vector4,System.Single)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector4.op_Multiply(System.Single,Engine.Math.Vector4)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector4.op_Multiply(Engine.Math.Matrix,Engine.Math.Vector4)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector4.op_Division(Engine.Math.Vector4,System.Single)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector4.Dot(Engine.Math.Vector4,Engine.Math.Vector4)">
+            <inheritdoc/>
+        </member>
+        <member name="T:Engine.Math.Vector3">
+            <summary>
+            A 3-dimensional vector.
+            </summary>
+        </member>
+        <member name="P:Engine.Math.Vector3.Zero">
+            <summary>
+            A 3-dimensional vector initialized to all zeros.
+            </summary>
+        </member>
+        <member name="M:Engine.Math.Vector3.#ctor(Engine.Math.Vector2,System.Single)">
+            <summary>
+            Initializes a new Vector3 with specified values by extending a Vector2.
+            </summary>
+        </member>
+        <member name="M:Engine.Math.Vector3.#ctor(System.Single,System.Single,System.Single)">
+            <summary>
+            Initializes a new Vector3 with specified values.
+            </summary>
+        </member>
+        <member name="P:Engine.Math.Vector3.Item(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector3.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector3.op_Addition(Engine.Math.Vector3,Engine.Math.Vector3)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector3.op_Addition(Engine.Math.Vector3,Engine.Math.Vector4)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector3.op_Subtraction(Engine.Math.Vector3,Engine.Math.Vector3)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector3.op_Subtraction(Engine.Math.Vector3,Engine.Math.Vector4)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector3.op_Multiply(Engine.Math.Vector3,System.Single)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector3.op_Multiply(System.Single,Engine.Math.Vector3)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector3.op_Division(Engine.Math.Vector3,System.Single)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector3.Dot(Engine.Math.Vector3,Engine.Math.Vector3)">
+            <summary>
+            Calculate the vector dot product.
+            </summary>
+            <returns>The dot product of the two vectors.</returns>
+        </member>
+        <member name="M:Engine.Math.Vector3.Cross(Engine.Math.Vector3,Engine.Math.Vector3)">
+            <summary>
+            Calculate the vector cross product.
+            </summary>
+            <returns>The cross product of the two vectors.</returns>
+        </member>
+        <member name="M:Engine.Math.Vector3.Distance(Engine.Math.Vector3,Engine.Math.Vector3)">
+            <summary>
+            Calculate the distance between two 3D-coordinates.
+            </summary>
+            <returns>The distance between the points.</returns>
+        </member>
+        <member name="M:Engine.Math.Vector3.Normalized">
+            <summary>
+            Get the normalized version of the vector.
+            </summary>
+            <returns>The normalized vector.</returns>
+        </member>
+        <member name="T:Engine.Math.Vector2">
+            <summary>
+            A 2-dimensional vector.
+            </summary>
+        </member>
+        <member name="P:Engine.Math.Vector2.Zero">
+            <summary>
+            A 2-dimensional vector initialized to all zeros.
+            </summary>
+        </member>
+        <member name="M:Engine.Math.Vector2.#ctor(System.Single,System.Single)">
+            <summary>
+            Initializes a new Vector2 with specified values.
+            </summary>
+        </member>
+        <member name="P:Engine.Math.Vector2.Item(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector2.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Math.Vector2.op_Addition(Engine.Math.Vector2,Engine.Math.Vector2)">
+            <summary>
+            Vector addition.
+            </summary>
+            <returns>A vector whose elements are the sums of the corresponding elements in the vectors being added.</returns>
+        </member>
+        <member name="M:Engine.Math.Vector2.op_Subtraction(Engine.Math.Vector2,Engine.Math.Vector2)">
+            <summary>
+            Vector subtraction.
+            </summary>
+            <returns>A vector whose elements are the differences of the corresponding elements in the vectors being subtracted.</returns>
+        </member>
+        <member name="M:Engine.Math.Vector2.op_Multiply(System.Single,Engine.Math.Vector2)">
+            <summary>
+            Vector scaling.
+            </summary>
+            <returns>A vector whose elements have been multiplied by a factor.</returns>
+        </member>
+        <member name="M:Engine.Math.Vector2.op_Multiply(Engine.Math.Vector2,System.Single)">
+            <summary>
+            Vector scaling.
+            </summary>
+            <returns>A vector whose elements have been multiplied by a factor.</returns>
+        </member>
+        <member name="M:Engine.Math.Vector2.op_Division(Engine.Math.Vector2,System.Single)">
+            <summary>
+            Vector scaling.
+            </summary>
+            <returns>A vector whose elements have been divided by a factor.</returns>
+        </member>
+        <member name="T:Engine.Math.Plane">
+            <summary>
+            A plane in 3D space, defined by a normal vector (automatically normalised) and a distance from the origin.
+            </summary>
+        </member>
+        <member name="M:Engine.Math.Plane.SignedDistance(Engine.Math.Vector3)">
+            <summary>
+            Calculate the signed distance to a point from the plane.
+            </summary>
+            <param name="vertex">The point to calculate the distance to.</param>
+        </member>
+        <member name="M:Engine.Math.Plane.LineIntersect(Engine.Math.Vector3,Engine.Math.Vector3)">
+            <summary>
+            Calculate the point at which a specified line segment intersects the plane.
+            </summary>
+            <param name="pointA">First end of the line segment.</param>
+            <param name="pointB">Second end of the line segment.</param>
+        </member>
+        <member name="T:Engine.Math.Triangle">
+            <summary>
+            A triangle containing the indexes of its vertices, a color value and a normal vector.
+            </summary>
+        </member>
+        <member name="M:Engine.Math.Triangle.#ctor(System.Int32,System.Int32,System.Int32,SFML.Graphics.Color,Engine.Math.Vector3)">
+            <summary>
+            Initializes a new Triangle.
+            </summary>
+            <param name="v0">The index of the triangle's first vertex.</param>
+            <param name="v1">The index of the triangle's second vertex.</param>
+            <param name="v2">The index of the triangle's third vertex.</param>
+            <param name="color">The triangle's color value.</param>
+            <param name="normal">The triangle's normal vector.</param>
+        </member>
+        <member name="M:Engine.Math.Triangle.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:Engine.Objects.Methods.MakeOXRotationMatrix(System.Single)">
+            <param name="degrees">The rotation angle to generate a transformation matrix for.</param>
+            <returns>Transformation matrix for a specified rotation around the X axis.</returns>
+        </member>
+        <member name="M:Engine.Objects.Methods.MakeOYRotationMatrix(System.Single)">
+            <param name="degrees">The rotation angle to generate a transformation matrix for.</param>
+            <returns>Transformation matrix for a specified rotation around the Y axis.</returns>
+        </member>
+        <member name="M:Engine.Objects.Methods.MakeOZRotationMatrix(System.Single)">
+            <param name="degrees">The rotation angle to generate a transformation matrix for.</param>
+            <returns>Transformation matrix for a specified rotation around the Z axis.</returns>
+        </member>
+        <member name="M:Engine.Objects.Methods.MakeTranslationMatrix(Engine.Math.Vector3)">
+            <param name="translation">The translation vector to generate a transformation matrix for.</param>
+            <returns>Transformation matrix for a specified translation.</returns>
+        </member>
+        <member name="M:Engine.Objects.Methods.MakeScalingMatrix(System.Single)">
+            <param name="scale">The scale factor to generate a transformation matrix for.</param>
+            <returns>Transformation matrix for a specified scale.</returns>
+        </member>
+        <member name="T:Engine.Objects.EngineObject">
+            <summary>
+            A specific instance of a model, with its own position, orientation and scale.
+            </summary>
+        </member>
+        <member name="F:Engine.Objects.EngineObject.name">
+            <summary>
+            The name of the object.
+            </summary>
+        </member>
+        <member name="F:Engine.Objects.EngineObject.model">
+            <summary>
+            The model of the object.
+            </summary>
+        </member>
+        <member name="F:Engine.Objects.EngineObject.position">
+            <summary>
+            The position of the object.
+            </summary>
+        </member>
+        <member name="F:Engine.Objects.EngineObject.scale">
+            <summary>
+            The scale of the object.
+            </summary>
+        </member>
+        <member name="P:Engine.Objects.EngineObject.Rotation">
+            <summary>
+            The rotation of the object.
+            </summary>
+            <value></value>
+        </member>
+        <member name="M:Engine.Objects.EngineObject.#ctor(Engine.Math.Vector3,System.String,Engine.Objects.Model,System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            Initializes a new instance of the class EngineObject.
+            </summary>
+            <param name="position">The position of the object.</param>
+            <param name="name">The name of the object.</param>
+            <param name="model">The model to render the object as.</param>
+            <param name="xRotation">The object's rotation around the x axis, in degrees.</param>
+            <param name="yRotation">The object's rotation around the y axis, in degrees.</param>
+            <param name="zRotation">The object's rotation around the z axis, in degrees.</param>
+            <param name="scale">The scale of the object.</param>
+        </member>
+        <member name="T:Engine.Objects.Model">
+            <summary>
+            A collection of vertices connected by triangles.
+            </summary>
+        </member>
+        <member name="F:Engine.Objects.Model.vertices">
+            <summary>
+            List of the model's vertices.
+            </summary>
+        </member>
+        <member name="F:Engine.Objects.Model.triangles">
+            <summary>
+            List of the model's triangles.
+            </summary>
+        </member>
+        <member name="F:Engine.Objects.Model.boundsCenter">
+            <summary>
+            The center point of the model.
+            </summary>
+        </member>
+        <member name="F:Engine.Objects.Model.boundsRadius">
+            <summary>
+            The radius of the objects bounding sphere.
+            </summary>
+        </member>
+        <member name="F:Engine.Objects.Model.texture">
+            <summary>
+            The model's texture.
+            </summary>
+        </member>
+        <member name="M:Engine.Objects.Model.#ctor(Engine.Objects.Vertex[],Engine.Math.Triangle[],SFML.Graphics.Image,System.Single)">
+            <summary>
+            Initializes a new instance of the class Model.
+            </summary>
+            <param name="vertices">The vertices of the model.</param>
+            <param name="triangles">The triangles of the model.</param>
+            <param name="texture">The texture of the model.</param>
+            <param name="boundsRadius">The radius of the model's bounding sphere.</param>
+        </member>
+        <member name="M:Engine.Objects.Model.FindCenter">
+            <summary>
+            Calculates the center point of the model.
+            </summary>
+        </member>
+        <member name="M:Engine.Objects.Model.FindBoundingRadius">
+            <summary>
+            Calculates the radius of the model's bounding sphere.
+            </summary>
+        </member>
+        <member name="T:Engine.Objects.Camera">
+            <summary>
+            A point of view with a position and orientation from which to view a scene.
+            </summary>
+        </member>
+        <member name="F:Engine.Objects.Camera.position">
+            <summary>
+            The camera's position.
+            </summary>
+        </member>
+        <member name="P:Engine.Objects.Camera.Default">
+            <summary>
+            A default camera, placed at (0, 0, 0).
+            </summary>
+        </member>
+        <member name="M:Engine.Objects.Camera.#ctor(Engine.Math.Vector3,System.Single,System.Single)">
+            <summary>
+            Initializes a new camera instance.
+            </summary>
+            <param name="position">The position of the camera.</param>
+            <param name="xRotation">The camera's rotation around the x axis, in degrees.</param>
+            <param name="yRotation">The camera's rotation around the y axis, in degrees.</param>
+        </member>
+        <member name="M:Engine.Objects.Camera.Translate(Engine.Math.Vector3)">
+            <summary>
+            Move the camera using a translation vector.
+            </summary>
+            <param name="vector">The translation vector.</param>
+        </member>
+        <member name="M:Engine.Objects.Camera.Rotate(System.Char,System.Single)">
+            <summary>
+            Rotate the camera around an axis by the specified angle.
+            </summary>
+            <param name="axis">The axis to rotate around ('x', 'y', or 'z')</param>
+            <param name="degrees"></param>
+        </member>
+        <member name="T:Engine.Objects.Vertex">
+            <summary>
+            A point in 3D space, with an optional 2D texture coordinate.
+            </summary>
+        </member>
+        <member name="F:Engine.Objects.Vertex.pos">
+            <summary>
+            The position of the vertex.
+            </summary>
+        </member>
+        <member name="F:Engine.Objects.Vertex.tc">
+            <summary>
+            The 2D texture coordinate of the vertex.
+            </summary>
+        </member>
+        <member name="M:Engine.Objects.Vertex.#ctor(Engine.Math.Vector3,Engine.Math.Vector2)">
+            <summary>
+            Initialize a new instance of the class Vertex.
+            </summary>
+            <param name="position">The position of the vertex.</param>
+            <param name="textureCoordinate">The 2D texture coordinate of the vertex.</param>
+        </member>
+        <member name="P:Engine.ObjectScript.Position">
+            <summary>
+            The object's position in 3D space.
+            </summary>
+        </member>
+        <member name="P:Engine.ObjectScript.Rotation">
+            <summary>
+            The object's rotation, represented as a Vector3 of the x, y and z rotation in degrees.
+            </summary>
+        </member>
+        <member name="P:Engine.ObjectScript.Scale">
+            <summary>
+            The object's scale.
+            </summary>
+        </member>
+        <member name="T:Engine.Scene">
+            <summary>
+            A scene containing a camera and objects.
+            </summary>
+        </member>
+        <member name="F:Engine.Scene.name">
+            <summary>
+            The name of the scene.
+            </summary>
+        </member>
+        <member name="F:Engine.Scene.camera">
+            <summary>
+            The scene's camera.
+            </summary>
+        </member>
+        <member name="F:Engine.Scene.worldLight">
+            <summary>
+            A directional light illuminating the scene.
+            </summary>
+        </member>
+        <member name="M:Engine.Scene.AddObject(Engine.Objects.EngineObject)">
+            <summary>
+            Add an object to the scene.
+            </summary>
+            <param name="engineObject">The object to add.</param>
+        </member>
+        <member name="M:Engine.Scene.GetObject(System.String)">
+            <summary>
+            Get an object in the scene.
+            </summary>
+            <param name="name">The name of the object to get.</param>
+            <returns>An engine object.</returns>
+        </member>
+        <member name="M:Engine.Scene.AttachScript(System.String,Engine.Objects.EngineObject)">
+            <summary>
+            Attach a script file to an engine object. The name of the script file must match its class name.
+            </summary>
+            <param name="fileName">The name of the script file to attach. The file name must match its class name.</param>
+            <param name="engineObject">The object to attach the script to.</param>
+        </member>
+        <member name="M:Engine.Scene.Init">
+            <summary>
+            Called once every time the scene is activated.
+            </summary>
+        </member>
+        <member name="M:Engine.Scene.Update(System.Single)">
+            <summary>
+            Called every frame.
+            </summary>
+            <param name="dt">Delta time, the time since the last frame.</param>
+        </member>
+        <member name="T:Engine.Viewer">
+            <summary>
+            A window that can display scenes.
+            </summary>
+        </member>
+        <member name="F:Engine.Viewer.activeScene">
+            <summary>
+            The scene currently displayed in the viewer.
+            </summary>
+        </member>
+        <member name="P:Engine.Viewer.WindowWidth">
+            <summary>
+            The width of the viewer window.
+            </summary>
+        </member>
+        <member name="P:Engine.Viewer.WindowHeight">
+            <summary>
+            The height of the viewer window.
+            </summary>
+        </member>
+        <member name="M:Engine.Viewer.#ctor(System.Int32,System.Int32,Engine.Scene,System.Single)">
+            <summary>
+            Initializes a new instance of the Viewer class with a specified window size and a main scene.
+            </summary>
+            <param name="windowWidth">The width of the viewer window.</param>
+            <param name="windowHeight">The height of the viewer window.</param>
+            <param name="mainScene">The first scene, which is displayed by default.</param>
+            <param name="fov">The field of view.</param>
+        </member>
+        <member name="M:Engine.Viewer.AddScene(Engine.Scene)">
+            <summary>
+            Add a scene to the viewer's list of scenes.
+            </summary>
+            <param name="scene">The scene to add.</param>
+        </member>
+        <member name="M:Engine.Viewer.ChangeToScene(System.String)">
+            <summary>
+            Change which scene is currently displayed in the viewer.
+            </summary>
+            <param name="sceneName">The name of the scene to change to.</param>
+        </member>
+        <member name="M:Engine.Viewer.ChangeToScene(Engine.Scene)">
+            <summary>
+            Change which scene is currently displayed in the viewer.
+            </summary>
+            <param name="scene">The scene to change to.</param>
+        </member>
+        <member name="M:Engine.Viewer.Run(System.String)">
+            <summary>
+            Start the viewer window.
+            </summary>
+            <param name="title">The title of the window.</param>
+        </member>
+    </members>
+</doc>
